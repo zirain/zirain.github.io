@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Install kafka on Win10 with WSL | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="KafkaInstall kafka on Win10 WSLInstall Java sudo apt update  sudo apt install openjdk-8-jdk /usr/lib/jvm   Install zookeeper sudo apt install zookeeper /usr/share/zookeeper /etc/zookeeper  sudo /usr/s">
+<meta name="keywords" content="kafka,wsl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Install kafka on Win10 with WSL">
+<meta property="og:url" content="http://zirain.github.io/2018/10/28/Kafka/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="KafkaInstall kafka on Win10 WSLInstall Java sudo apt update  sudo apt install openjdk-8-jdk /usr/lib/jvm   Install zookeeper sudo apt install zookeeper /usr/share/zookeeper /etc/zookeeper  sudo /usr/s">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-01-30T00:46:14.101Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Install kafka on Win10 with WSL">
+<meta name="twitter:description" content="KafkaInstall kafka on Win10 WSLInstall Java sudo apt update  sudo apt install openjdk-8-jdk /usr/lib/jvm   Install zookeeper sudo apt install zookeeper /usr/share/zookeeper /etc/zookeeper  sudo /usr/s">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://zirain.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Kafka" class="article article-type-post" itemscope="" itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/10/28/Kafka/" class="article-date">
+  <time datetime="2018-10-27T16:00:00.000Z" itemprop="datePublished">2018-10-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Install kafka on Win10 with WSL
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Kafka"><a href="#Kafka" class="headerlink" title="Kafka"></a>Kafka</h1><h2 id="Install-kafka-on-Win10-WSL"><a href="#Install-kafka-on-Win10-WSL" class="headerlink" title="Install kafka on Win10 WSL"></a>Install kafka on Win10 WSL</h2><h3 id="Install-Java"><a href="#Install-Java" class="headerlink" title="Install Java"></a>Install Java</h3><ul>
+<li><p><code>sudo apt update</code></p>
+</li>
+<li><p><code>sudo apt install openjdk-8-jdk</code></p>
+<p><code>/usr/lib/jvm</code></p>
+</li>
+</ul>
+<h3 id="Install-zookeeper"><a href="#Install-zookeeper" class="headerlink" title="Install zookeeper"></a>Install zookeeper</h3><ul>
+<li><p><code>sudo apt install zookeeper</code></p>
+<p><code>/usr/share/zookeeper</code></p>
+<p><code>/etc/zookeeper</code></p>
+</li>
+<li><p><code>sudo /usr/share/zookeeper/bin/zkServer.sh start</code></p>
+</li>
+<li><p><code>sudo /usr/share/zookeeper/bin/zkServer.sh status</code></p>
+</li>
+<li><p><code>telnet localhost 2181</code></p>
+</li>
+</ul>
+<h3 id="Install-Kafka"><a href="#Install-Kafka" class="headerlink" title="Install Kafka"></a>Install Kafka</h3><ul>
+<li><p>下载</p>
+<p><code>wget http://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.0.0/kafka_2.11-2.0.0.tgz</code></p>
+</li>
+<li><p>解压&amp;安装</p>
+<p><code>sudo tar -zxf kafka_2.11-2.0.0.tgz</code></p>
+<p><code>sudo mkdir -p /usr/local/kafka</code></p>
+<p><code>sudo mv kafka_2.11-2.0.0 /usr/local/kafka</code></p>
+<p><code>sudo mkdir -p /tmp/kafka-logs</code></p>
+</li>
+<li><p>启动Kafka</p>
+<p><code>sudo cd /usr/local/kafka/kafka_2.11-2.0.0</code></p>
+<p><code>sudo bin/kafka-server-start.sh -daemon config/server.properties</code></p>
+</li>
+<li><p>测试安装</p>
+<ul>
+<li><p>创建主题</p>
+<p><code>sudo bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test</code></p>
+<p><code>sudo bin/kafka-topics.sh --zookeeper localhost:2181 --describe --topic test</code></p>
+<p><code>sudo bin/kafka-topics.sh --list --zookeeper localhost:2181</code></p>
+</li>
+<li><p>发布消息</p>
+<p><code>sudo bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test</code></p>
+</li>
+<li><p>读取消息</p>
+<p><code>sudo bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning</code></p>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://zirain.github.io/2018/10/28/Kafka/" data-id="cjrih2tk90004w4wg9an12gji" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wsl/">wsl</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/12/04/Jenkins-Docker/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Install Jenkins on Docker
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/elk/">elk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jenkins/">jenkins</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/k8s/">k8s</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafka/">kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl/">wsl</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/docker/" style="font-size: 20px;">docker</a> <a href="/tags/elk/" style="font-size: 10px;">elk</a> <a href="/tags/jenkins/" style="font-size: 10px;">jenkins</a> <a href="/tags/k8s/" style="font-size: 10px;">k8s</a> <a href="/tags/kafka/" style="font-size: 10px;">kafka</a> <a href="/tags/wsl/" style="font-size: 10px;">wsl</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/01/27/Kubernetes-1/">Kubernetes(1)</a>
+          </li>
+        
+          <li>
+            <a href="/2019/01/26/Docker-2/">Docker(2)</a>
+          </li>
+        
+          <li>
+            <a href="/2019/01/23/Docker-1/">Docker(1)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/04/Jenkins-Docker/">Install Jenkins on Docker</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/Kafka/">Install kafka on Win10 with WSL</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="https://cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
