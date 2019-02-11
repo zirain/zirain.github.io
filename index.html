@@ -92,32 +92,17 @@
 <li>chocolate</li>
 <li>VPN</li>
 </ul>
-<h3 id="安装minikube"><a href="#安装minikube" class="headerlink" title="安装minikube"></a>安装minikube</h3><p><code>choco install minikuber kubernetes-cli</code></p>
+<h3 id="安装minikube"><a href="#安装minikube" class="headerlink" title="安装minikube"></a>安装minikube</h3><p><code>choco install minikube kubernetes-cli</code></p>
+<p>国内无法连接 <a href="https://k8s.gcr.io" target="_blank" rel="noopener">https://k8s.gcr.io</a> , 可以使用aliyun提供的minikube来替代，下载 <a href="http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.25.2/minikube-windows-amd64.exe?spm=a2c4e.11153940.blogcont221687.29.20be4cecbKLHr4&amp;file=minikube-windows-amd64.exe" target="_blank" rel="noopener">minikube-windows-amd64.exe</a> 文件，重命名为 <code>minikube.exe</code>,并设置环境变量</p>
 <p><code>minikube start --registry-mirror=https://registry.docker-cn.com --kubernetes-version v1.13.2</code></p>
-<h3 id="设置hyper-v-switch"><a href="#设置hyper-v-switch" class="headerlink" title="设置hyper-v switch"></a>设置hyper-v switch</h3><h3 id="启动minikube"><a href="#启动minikube" class="headerlink" title="启动minikube"></a>启动minikube</h3><p><code>minikube start --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot;</code></p>
+<h3 id="设置hyper-v-switch"><a href="#设置hyper-v-switch" class="headerlink" title="设置hyper-v switch"></a>设置hyper-v switch</h3><h3 id="启动minikube"><a href="#启动minikube" class="headerlink" title="启动minikube"></a>启动minikube</h3><p><code>minikube start --registry-mirror=https://registry.docker-cn.com --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot;</code></p>
 <h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><p>如果你遇到这个错误，Error restarting cluster: restarting kube-proxy: waiting for kube-proxy to be up for configmap update: timed out waiting for the condition`</p>
 <p>通过 <code>minikube delete</code>，<code>minikube start</code> 可以解决</p>
-<p>遇到无法连接 k8s.gcr.io错误时:可以通过镜像拉取</p>
-<p><code>docker pull mirrorgooglecontainers/kube-apiserver-amd64:v1.11.7</code></p>
-<p><code>docker pull mirrorgooglecontainers/kube-controller-manager-amd64:v1.11.7</code></p>
-<p><code>docker pull mirrorgooglecontainers/kube-scheduler-amd64:v1.11.7</code></p>
-<p><code>docker pull mirrorgooglecontainers/kube-proxy-amd64:v1.11.7</code></p>
-<p><code>docker pull mirrorgooglecontainers/pause:3.1</code></p>
-<p><code>docker pull mirrorgooglecontainers/etcd-amd64:3.2.24</code></p>
-<p><code>docker pull coredns/coredns:1.2.6</code></p>
-<p>通过docker tag命令来修改镜像的标签:</p>
-<p><code>docker tag docker.io/mirrorgooglecontainers/kube-proxy-amd64:v1.11.7 k8s.gcr.io/kube-proxy-amd64:v1.13.2</code></p>
-<p><code>docker tag docker.io/mirrorgooglecontainers/kube-scheduler-amd64:v1.11.7 k8s.gcr.io/kube-scheduler-amd64:v1.13.2</code></p>
-<p><code>docker tag docker.io/mirrorgooglecontainers/kube-apiserver-amd64:v1.11.7 k8s.gcr.io/kube-apiserver-amd64:v1.13.2</code></p>
-<p><code>docker tag docker.io/mirrorgooglecontainers/kube-controller-manager-amd64:v1.11.7 k8s.gcr.io/kube-controller-manager-amd64:v1.13.2</code></p>
-<p><code>docker tag docker.io/mirrorgooglecontainers/etcd-amd64:3.2.24  k8s.gcr.io/etcd-amd64:3.2.24</code></p>
-<p><code>docker tag docker.io/mirrorgooglecontainers/pause:3.1  k8s.gcr.io/pause:3.1</code></p>
-<p><code>docker tag docker.io/coredns/coredns:1.2.6  k8s.gcr.io/coredns:1.2.6</code></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2019/01/27/Kubernetes-1/" data-id="cjrih2tkc0005w4wgzx48y236" class="article-share-link">Share</a>
+      <a data-url="http://zirain.github.io/2019/01/27/Kubernetes-1/" data-id="cjs0igpfz0005s0wghmxs1j4w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/k8s/">k8s</a></li></ul>
@@ -171,7 +156,7 @@ docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Ne
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2019/01/26/Docker-2/" data-id="cjrih2tjz0001w4wg8ioa28zn" class="article-share-link">Share</a>
+      <a data-url="http://zirain.github.io/2019/01/26/Docker-2/" data-id="cjs0igpfo0001s0wgit7rv9im" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
@@ -213,7 +198,7 @@ docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Ne
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2019/01/23/Docker-1/" data-id="cjrih2tje0000w4wgkuf0kkn7" class="article-share-link">Share</a>
+      <a data-url="http://zirain.github.io/2019/01/23/Docker-1/" data-id="cjs0igpfc0000s0wgp0r8ipvw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/elk/">elk</a></li></ul>
@@ -259,7 +244,7 @@ docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Ne
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2018/12/04/Jenkins-Docker/" data-id="cjrih2tk70003w4wguf2zhktf" class="article-share-link">Share</a>
+      <a data-url="http://zirain.github.io/2018/12/04/Jenkins-Docker/" data-id="cjs0igpfv0003s0wgnjmerjgj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jenkins/">jenkins</a></li></ul>
@@ -346,7 +331,7 @@ docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Ne
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2018/10/28/Kafka/" data-id="cjrih2tk90004w4wg9an12gji" class="article-share-link">Share</a>
+      <a data-url="http://zirain.github.io/2018/10/28/Kafka/" data-id="cjs0igpfx0004s0wgvtwy1u3v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wsl/">wsl</a></li></ul>
