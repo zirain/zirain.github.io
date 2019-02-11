@@ -93,7 +93,7 @@
 <li>VPN</li>
 </ul>
 <h3 id="安装minikube"><a href="#安装minikube" class="headerlink" title="安装minikube"></a>安装minikube</h3><p><code>choco install minikube kubernetes-cli</code></p>
-<p>国内无法连接 <a href="https://k8s.gcr.io" target="_blank" rel="noopener">https://k8s.gcr.io</a> , 可以使用aliyun提供的minikube来替代，下载 <a href="http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.25.2/minikube-windows-amd64.exe?spm=a2c4e.11153940.blogcont221687.29.20be4cecbKLHr4&amp;file=minikube-windows-amd64.exe" target="_blank" rel="noopener">minikube-windows-amd64.exe</a> 文件，重命名为 <code>minikube.exe</code>,并设置环境变量</p>
+<p>国内无法连接 <a href="https://k8s.gcr.io" target="_blank" rel="noopener">https://k8s.gcr.io</a> , 可以使用aliyun提供的minikube来替代，下载 <a href="http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.25.2/minikube-windows-amd64.exe?spm=a2c4e.11153940.blogcont221687.29.20be4cecbKLHr4&amp;file=minikube-windows-amd64.exe" target="_blank" rel="noopener">minikube-windows-amd64.exe</a> 文件，重命名为 <code>minikube.exe</code>，并设置环境变量</p>
 <p><code>minikube start --registry-mirror=https://registry.docker-cn.com --kubernetes-version v1.13.2</code></p>
 <h3 id="设置hyper-v-switch"><a href="#设置hyper-v-switch" class="headerlink" title="设置hyper-v switch"></a>设置hyper-v switch</h3><h3 id="启动minikube"><a href="#启动minikube" class="headerlink" title="启动minikube"></a>启动minikube</h3><p><code>minikube start --registry-mirror=https://registry.docker-cn.com --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot;</code></p>
 <h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><p>如果你遇到这个错误，Error restarting cluster: restarting kube-proxy: waiting for kube-proxy to be up for configmap update: timed out waiting for the condition`</p>
