@@ -1,450 +1,652 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+
+
+
+
+
 <head><meta name="generator" content="Hexo 3.8.0">
-  <meta charset="utf-8">
-  
-
-  
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content="">
+  <meta name="author" content="zirain">
+  <meta name="keywords" content="">
   <title>dirty code</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="dirty code">
-<meta property="og:url" content="http://zirain.github.io/index.html">
-<meta property="og:site_name" content="dirty code">
-<meta property="og:locale" content="default">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="dirty code">
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css">
+  <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
   
-    <link rel="alternate" href="/atom.xml" title="dirty code" type="application/atom+xml">
+    <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
   
+  <link rel="stylesheet" href="/css/main.css">
+
   
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
 </head>
-</html>
+
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">dirty code</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">things change, roll with it!</a>
-        </h2>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
+  <header style="height: 100vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">&nbsp;<strong>dirty code</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
         
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://zirain.github.io"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-Kubernetes-1" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/01/27/Kubernetes-1/" class="article-date">
-  <time datetime="2019-01-26T16:00:00.000Z" itemprop="datePublished">2019-01-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/27/Kubernetes-1/">Kubernetes(1)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Install-Kubernetes-on-Windows-10"><a href="#Install-Kubernetes-on-Windows-10" class="headerlink" title="Install Kubernetes on Windows 10"></a>Install Kubernetes on Windows 10</h1><h2 id="Install-Minikube"><a href="#Install-Minikube" class="headerlink" title="Install Minikube"></a>Install Minikube</h2><h3 id="准备条件"><a href="#准备条件" class="headerlink" title="准备条件"></a>准备条件</h3><ul>
-<li>chocolate</li>
-<li>VPN</li>
-</ul>
-<h3 id="安装minikube"><a href="#安装minikube" class="headerlink" title="安装minikube"></a>安装minikube</h3><p><code>choco install minikube kubernetes-cli</code></p>
-<p>国内无法连接 <a href="https://k8s.gcr.io" target="_blank" rel="noopener">https://k8s.gcr.io</a> , 可以使用aliyun提供的minikube来替代，下载 <a href="http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.25.2/minikube-windows-amd64.exe?spm=a2c4e.11153940.blogcont221687.29.20be4cecbKLHr4&amp;file=minikube-windows-amd64.exe" target="_blank" rel="noopener">minikube-windows-amd64.exe</a> 文件，重命名为 <code>minikube.exe</code>，并设置环境变量</p>
-<p><code>minikube start --registry-mirror=https://registry.docker-cn.com --kubernetes-version v1.13.2</code></p>
-<h3 id="设置hyper-v-switch"><a href="#设置hyper-v-switch" class="headerlink" title="设置hyper-v switch"></a>设置hyper-v switch</h3><h3 id="启动minikube"><a href="#启动minikube" class="headerlink" title="启动minikube"></a>启动minikube</h3><p><code>minikube start --registry-mirror=https://registry.docker-cn.com --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot;</code></p>
-<h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><p>如果你遇到这个错误，Error restarting cluster: restarting kube-proxy: waiting for kube-proxy to be up for configmap update: timed out waiting for the condition`</p>
-<p>通过 <code>minikube delete</code>，<code>minikube start</code> 可以解决</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2019/01/27/Kubernetes-1/" data-id="cjs0igpfz0005s0wghmxs1j4w" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/k8s/">k8s</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Docker-2" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/01/26/Docker-2/" class="article-date">
-  <time datetime="2019-01-25T16:00:00.000Z" itemprop="datePublished">2019-01-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/26/Docker-2/">Docker(2)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h2 id="访问宿主机"><a href="#访问宿主机" class="headerlink" title="访问宿主机"></a>访问宿主机</h2><h3 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h3><p>宿主机执行ipconfig<br>会看到docker0那个ip，可以使用来访问宿主机</p>
-<h3 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h3><p>docker 18.03 加入了一个 feature，在容器中可以通过 host.docker.internal来访问主机<br>Use your internal IP address or connect to the special DNS name host.docker.internal which will resolve to the internal IP address used by the host.</p>
-<h2 id="查看IP"><a href="#查看IP" class="headerlink" title="查看IP"></a>查看IP</h2><h3 id="查看容器IP"><a href="#查看容器IP" class="headerlink" title="查看容器IP"></a>查看容器IP</h3><p><code>
-docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container_id>
-</container_id></code></p>
-<h3 id="查看所有容器的IP"><a href="#查看所有容器的IP" class="headerlink" title="查看所有容器的IP"></a>查看所有容器的IP</h3><p><code>
-docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}' $(docker ps -aq)
-</code></p>
-<h2 id="删除容器"><a href="#删除容器" class="headerlink" title="删除容器"></a>删除容器</h2><h3 id="删除指定容器"><a href="#删除指定容器" class="headerlink" title="删除指定容器"></a>删除指定容器</h3><p><code>docker rm &lt;container_id&gt;</code></p>
-<p><code>docker rm &lt;container_name&gt;</code></p>
-<p><code>docker rm -f &lt;container_id&gt;</code></p>
-<p><code>docker rm -f &lt;container_name&gt;</code></p>
-<h3 id="删除所有容器"><a href="#删除所有容器" class="headerlink" title="删除所有容器"></a>删除所有容器</h3><p><code>docker rm &#96;docker ps -a -q&#96;</code></p>
-<h2 id="删除镜像"><a href="#删除镜像" class="headerlink" title="删除镜像"></a>删除镜像</h2><p><code>docker image rm &lt;image_id&gt;</code></p>
-<p><code>docker rmi &lt;image_id&gt;</code></p>
-<h3 id="删除所有镜像"><a href="#删除所有镜像" class="headerlink" title="删除所有镜像"></a>删除所有镜像</h3><p><code>docker rmi &#96;docker images -a -q&#96;</code></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2019/01/26/Docker-2/" data-id="cjs0igpfo0001s0wgit7rv9im" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Docker-1" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/01/23/Docker-1/" class="article-date">
-  <time datetime="2019-01-22T16:00:00.000Z" itemprop="datePublished">2019-01-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/23/Docker-1/">Docker(1)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h2 id="Install-Elasticsearch-amp-Kibana"><a href="#Install-Elasticsearch-amp-Kibana" class="headerlink" title="Install Elasticsearch &amp; Kibana"></a>Install Elasticsearch &amp; Kibana</h2><h3 id="create-network"><a href="#create-network" class="headerlink" title="create network"></a>create network</h3><p><code>docker network create es-network</code></p>
-<h3 id="install-elasticsearch"><a href="#install-elasticsearch" class="headerlink" title="install elasticsearch"></a>install elasticsearch</h3><p><code>docker run -d --name elasticsearch --net es-network -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; docker.elastic.co/elasticsearch/elasticsearch:6.5.4</code></p>
-<h3 id="install-kibana"><a href="#install-kibana" class="headerlink" title="install kibana"></a>install kibana</h3><p><code>docker run -d --name kibana --net es-network -p 5601:5601 docker.elastic.co/kibana/kibana:6.5.4</code></p>
-<h2 id="Run-consul-in-devlopment-mode"><a href="#Run-consul-in-devlopment-mode" class="headerlink" title="Run consul in devlopment mode"></a>Run consul in devlopment mode</h2><p><code>docker run --name consul1 -p 8500:8500 consul</code></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2019/01/23/Docker-1/" data-id="cjs0igpfc0000s0wgp0r8ipvw" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/elk/">elk</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Jenkins-Docker" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/12/04/Jenkins-Docker/" class="article-date">
-  <time datetime="2018-12-03T16:00:00.000Z" itemprop="datePublished">2018-12-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/12/04/Jenkins-Docker/">Install Jenkins on Docker</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h2 id="List-containers"><a href="#List-containers" class="headerlink" title="List containers"></a>List containers</h2><p><code>docker ps</code></p>
-<h2 id="Stop-container"><a href="#Stop-container" class="headerlink" title="Stop container"></a>Stop container</h2><p><code>docker stop [docker-id]</code></p>
-<h2 id="Remove-container"><a href="#Remove-container" class="headerlink" title="Remove container"></a>Remove container</h2><p><code>docker rm [docker-id]</code></p>
-<h2 id="Run-cmd-in-container"><a href="#Run-cmd-in-container" class="headerlink" title="Run cmd in container"></a>Run cmd in container</h2><p><code>docker exec -it [docker-name] [cmd] [options]</code></p>
-<h2 id="Install-Jenkins"><a href="#Install-Jenkins" class="headerlink" title="Install Jenkins"></a>Install Jenkins</h2><p><code>dcoker run -d --name jenkins -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts</code></p>
-<h2 id="Install-redis"><a href="#Install-redis" class="headerlink" title="Install redis"></a>Install redis</h2><p><code>docker run -d --name my-redis -p 6379:6379 redis</code></p>
-<h2 id="Install-rabbitmq"><a href="#Install-rabbitmq" class="headerlink" title="Install rabbitmq"></a>Install rabbitmq</h2><p><code>docker run -d --name my-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management</code></p>
-<h3 id="Enable-rabbitmq-web-management"><a href="#Enable-rabbitmq-web-management" class="headerlink" title="Enable rabbitmq web management"></a>Enable rabbitmq web management</h3><p><code>docker exec -it [docker-id] rabbitmq-plugins enable rabbitmq_management</code></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2018/12/04/Jenkins-Docker/" data-id="cjs0igpfv0003s0wgnjmerjgj" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jenkins/">jenkins</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Kafka" class="article article-type-post" itemscope="" itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/10/28/Kafka/" class="article-date">
-  <time datetime="2018-10-27T16:00:00.000Z" itemprop="datePublished">2018-10-28</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/10/28/Kafka/">Install kafka on Win10 with WSL</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Kafka"><a href="#Kafka" class="headerlink" title="Kafka"></a>Kafka</h1><h2 id="Install-kafka-on-Win10-WSL"><a href="#Install-kafka-on-Win10-WSL" class="headerlink" title="Install kafka on Win10 WSL"></a>Install kafka on Win10 WSL</h2><h3 id="Install-Java"><a href="#Install-Java" class="headerlink" title="Install Java"></a>Install Java</h3><ul>
-<li><p><code>sudo apt update</code></p>
-</li>
-<li><p><code>sudo apt install openjdk-8-jdk</code></p>
-<p><code>/usr/lib/jvm</code></p>
-</li>
-</ul>
-<h3 id="Install-zookeeper"><a href="#Install-zookeeper" class="headerlink" title="Install zookeeper"></a>Install zookeeper</h3><ul>
-<li><p><code>sudo apt install zookeeper</code></p>
-<p><code>/usr/share/zookeeper</code></p>
-<p><code>/etc/zookeeper</code></p>
-</li>
-<li><p><code>sudo /usr/share/zookeeper/bin/zkServer.sh start</code></p>
-</li>
-<li><p><code>sudo /usr/share/zookeeper/bin/zkServer.sh status</code></p>
-</li>
-<li><p><code>telnet localhost 2181</code></p>
-</li>
-</ul>
-<h3 id="Install-Kafka"><a href="#Install-Kafka" class="headerlink" title="Install Kafka"></a>Install Kafka</h3><ul>
-<li><p>下载</p>
-<p><code>wget http://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.0.0/kafka_2.11-2.0.0.tgz</code></p>
-</li>
-<li><p>解压&amp;安装</p>
-<p><code>sudo tar -zxf kafka_2.11-2.0.0.tgz</code></p>
-<p><code>sudo mkdir -p /usr/local/kafka</code></p>
-<p><code>sudo mv kafka_2.11-2.0.0 /usr/local/kafka</code></p>
-<p><code>sudo mkdir -p /tmp/kafka-logs</code></p>
-</li>
-<li><p>启动Kafka</p>
-<p><code>sudo cd /usr/local/kafka/kafka_2.11-2.0.0</code></p>
-<p><code>sudo bin/kafka-server-start.sh -daemon config/server.properties</code></p>
-</li>
-<li><p>测试安装</p>
-<ul>
-<li><p>创建主题</p>
-<p><code>sudo bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test</code></p>
-<p><code>sudo bin/kafka-topics.sh --zookeeper localhost:2181 --describe --topic test</code></p>
-<p><code>sudo bin/kafka-topics.sh --list --zookeeper localhost:2181</code></p>
-</li>
-<li><p>发布消息</p>
-<p><code>sudo bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test</code></p>
-</li>
-<li><p>读取消息</p>
-<p><code>sudo bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning</code></p>
-</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://zirain.github.io/2018/10/28/Kafka/" data-id="cjs0igpfx0004s0wgvtwy1u3v" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wsl/">wsl</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/elk/">elk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jenkins/">jenkins</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/k8s/">k8s</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kafka/">kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl/">wsl</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/docker/" style="font-size: 20px;">docker</a> <a href="/tags/elk/" style="font-size: 10px;">elk</a> <a href="/tags/jenkins/" style="font-size: 10px;">jenkins</a> <a href="/tags/k8s/" style="font-size: 10px;">k8s</a> <a href="/tags/kafka/" style="font-size: 10px;">kafka</a> <a href="/tags/wsl/" style="font-size: 10px;">wsl</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2019/01/27/Kubernetes-1/">Kubernetes(1)</a>
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
           </li>
         
-          <li>
-            <a href="/2019/01/26/Docker-2/">Docker(2)</a>
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
           </li>
         
-          <li>
-            <a href="/2019/01/23/Docker-1/">Docker(1)</a>
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
           </li>
         
-          <li>
-            <a href="/2018/12/04/Jenkins-Docker/">Install Jenkins on Docker</a>
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
           </li>
         
-          <li>
-            <a href="/2018/10/28/Kafka/">Install kafka on Win10 with WSL</a>
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
           </li>
         
       </ul>
     </div>
   </div>
 
-  
-</aside>
+
+</nav>
+
+    <div class="view intro-2"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+          </div>
+
+          
+            <div class="scroll-down-bar">
+              <i class="fa fa-angle-down scroll-down-arrow"></i>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      <div class="container nopadding-md">
+        <div class="py-5 z-depth-3" id="board">
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2020/03/27/go-get-config/">
+        <p class="h4 index-header">国内配置加速go get 加速</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">Windows启用go module1. 右键 我的电脑 -&gt; 属性 -&gt; 高级系统设置 -&gt; 环境变量
+2. 在 “[你的用户名]的用户变量” 中点击 ”新建“ 按钮
+3. 在 “变量名” 输入框并新增 “GO111MODULE”
+4. 在对应的 “变量值” 输入框中新增 “on”
+5. 最后点击 “确定” 按钮保存设置
+配置GOPROXY1. 右键 我的电脑 -&gt; 属性 -&gt; 高级系统设置 -&gt; 环境变量
+2. 在 “[你的用户名]的用户变量” 中点击 ”新建“ 按钮
+3. 在 “变量名” 输入框并新增 “GOPROXY”
+4. 在对应的 “变量值” 输入框中新增 “https://mirrors.aliyun.com/goproxy/”
+5. 最后点击 “确定” 按钮保存设置
+</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2020-03-27&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/go">go</a>&nbsp;
+          
         
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2019 zirain<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/07/12/aspnetcore-keyvault/">
+        <p class="h4 index-header">AspNetCore work with Azure KeyVault</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">背景AspNetCore 使用Azure Key Vault 存储机密配置信息
+环境aspnetcore-version: 3.0
+azure-cloud: Azure China
+Source Codehttps://github.com/zirain/AspNetCore-Playground/tree/master/src/Azure/Azure.KeyVault.Web
+步骤创建Key Vault按照 Azure 文档 创建资源
+配置Access Policy参考 Stackoverflow 设置Key Vault的Acess Policy
+AspNetCore KeyVault Configuration Providerappsettings.json 配置{
+  &quot;KeyVault&quot;: {
+    &quot;ClientId&quot;: &quot;&lt;Your ClientId&gt;&quot;,
+    &quot;ClientSecret&quot;: &quot;&lt;Your ClientSecret&gt;&quot;,
+   </div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-07-12&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/aspnetcore">aspnetcore</a>&nbsp;
+          
+            <a href="/tags/azure">azure</a>&nbsp;
+          
+            <a href="/tags/key%20vault">key vault</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/05/07/aspnetcore-upload-large-file/">
+        <p class="h4 index-header">AspNetCore 上传大文件</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">背景AspNetCore 在上传较大文件时收到错误 404.13
+环境aspnetcore-version: 2.1
+host-server: windows
+use-iis: true
+原因New default 30 MB (~28.6 MiB) max request body size limit
+IIS处理针对Kestrel的修改，无法修改IIS的默认设置；本地开始时如果使用IISExpress 或 生产部署在IIS中依然会碰到这个问题。
+通过web.config解决IIS的问题dotnet publish命令会生成默认的web.config文件，在尽量不修改默认行为下，可做如下处理：
+假设 BuildConfig=Release新建 web.Release.config在文件输入
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;configuration  xmlns:xdt=&quot;http://schemas.microsoft.com/XML-Document-Transfo</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-05-07&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/aspnetcore">aspnetcore</a>&nbsp;
+          
+            <a href="/tags/IIS">IIS</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/04/22/helm-with-k8s/">
+        <p class="h4 index-header">helm-with-k8s</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">Install Helmhelm version
+Helm Inithelm init --client-only --stable-repo-url https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts/helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/helm repo updatehelm repo list
+Install Helm Tillerhelm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.14.2  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+helm init --service-accou</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-04-22&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/k8s">k8s</a>&nbsp;
+          
+            <a href="/tags/helm">helm</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/04/04/k8s-on-mac/">
+        <p class="h4 index-header">Install minikube on Mac Pro</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">Install minikube使用阿里云修改的版本，避免国内无法连接 k8s.gcr.io 导致失败
+curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.4.0/minikube-darwin-amd64 &amp;&amp; chmod +x minikube &amp;&amp; sudo mv minikube /usr/local/bin/
+Install VM providersInstall Hyperkit driverbrew install docker-machine-driver-hyperkit
+安装完成后需要执行如下命令：
+docker-machine-driver-hyperkit need root owner and uid
+sudo chown root:wheel /usr/local/opt/docker-machine-driver-hyperkit/bin/docker-machine-driver-hyperkit
+sud</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-04-04&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/k8s">k8s</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/01/27/k8s-on-win10/">
+        <p class="h4 index-header">Install Kubernetes on Windows 10</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">Install Minikube准备条件
+chocolate
+VPN
+
+安装minikubechoco install minikube kubernetes-cli
+国内无法连接 k8s.gcr.io , 可以使用aliyun提供的minikube来替代，下载 minikube-windows-amd64.exe 文件，重命名为 minikube.exe，并设置环境变量
+minikube start --registry-mirror=https://registry.docker-cn.com --kubernetes-version v1.13.2
+设置hyper-v switch启动minikubeminikube start --registry-mirror=https://registry.docker-cn.com --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot;
+minikube start --registry-mirror=https://hub-mi</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-01-27&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/k8s">k8s</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/01/26/Docker-2/">
+        <p class="h4 index-header">Docker(2)</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">Docker访问宿主机方案一宿主机执行ipconfig会看到docker0那个ip，可以使用来访问宿主机
+方案二docker 18.03 加入了一个 feature，在容器中可以通过 host.docker.internal来访问主机Use your internal IP address or connect to the special DNS name host.docker.internal which will resolve to the internal IP address used by the host.
+查看IP查看容器IP
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' 
+
+查看所有容器的IP
+docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}' $(docker ps -aq)
+
+删除容器删除指定容器docker rm &l</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-01-26&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/01/23/Docker-1/">
+        <p class="h4 index-header">Docker(1)</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">DockerInstall Elasticsearch &amp; Kibanacreate networkdocker network create es-network
+install elasticsearchdocker run -d --name elasticsearch --net es-network -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+install kibanadocker run -d --name kibana --net es-network -p 5601:5601 docker.elastic.co/kibana/kibana:6.5.4
+Run consul in devlopment modedocker run --name consul1 -p 8500:8500 consul
+</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-01-23&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/elk">elk</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2018/12/04/Jenkins-Docker/">
+        <p class="h4 index-header">Install Jenkins on Docker</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">DockerList containersdocker ps
+Stop containerdocker stop [docker-id]
+Remove containerdocker rm [docker-id]
+Run cmd in containerdocker exec -it [docker-name] [cmd] [options]
+Install Jenkinsdcoker run -d --name jenkins -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+Install redisdocker run -d --name my-redis -p 6379:6379 redis
+Install rabbitmqdocker run -d --name my-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+Enable rabbitmq web managementdocker exec -it [docker-id] rabbitmq-plugins e</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2018-12-04&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/jenkins">jenkins</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2018/10/28/Kafka/">
+        <p class="h4 index-header">Install kafka on Win10 with WSL</p>
+        
+        
+          
+        
+        <div class="index-excerpt">
+          <div class="index-text mb-1">KafkaInstall kafka on Win10 WSLInstall Java
+sudo apt update
+
+sudo apt install openjdk-8-jdk
+/usr/lib/jvm
+
+
+Install zookeeper
+sudo apt install zookeeper
+/usr/share/zookeeper
+/etc/zookeeper
+
+sudo /usr/share/zookeeper/bin/zkServer.sh start
+
+sudo /usr/share/zookeeper/bin/zkServer.sh status
+
+telnet localhost 2181
+
+
+Install Kafka
+下载
+wget http://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.0.0/kafka_2.11-2.0.0.tgz
+
+解压&amp;安装
+sudo tar -zxf kafka_2.11-2.0.0.tgz
+sudo mkdir -p /usr/local/kafka
+sudo mv kafka</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2018-10-28&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/kafka">kafka</a>&nbsp;
+          
+            <a href="/tags/wsl">wsl</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
   </div>
 </footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
 
-<script src="https://cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script>
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/popper/popper.min.js"></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js"></script>
+<script src="/js/main.js"></script>
 
-
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
+  <script src="/js/lazyload.js"></script>
 
 
 
-  </div>
+  <script src="/lib/prettify/prettify.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+  <script src="/lib/typed/typed.min.js"></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "things change, roll with it!&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+  <script src="/lib/anchor/anchor.min.js"></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js"></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
 </body>
 </html>
