@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content>
+  <meta name="author" content="zirain">
+  <meta name="keywords" content>
+  <title>通过Telemetry API自定义Istio访问日志 ~ dirty code</title>
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css">
+  <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
+  
+    <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>dirty code</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+</nav>
+
+    <div class="view intro-2"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              <br>
+              <p>星期三, 七月 27日 2022, 10:48 晚上</p>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="py-5 z-depth-3" id="board">
+        <div class="post-content mx-auto">
+          <div class="markdown-body">
+            <p>Istio 为网格内的所有服务通信生成详细的遥测数据，主要包含访问日志、监控指标和调用链。在 v1.11 版本之前我们可以通过<code>MeshConfig</code>中 <code>AccessLogFile</code>、<code>AccessLogFormat</code>以及<code>EnableEnvoyAccessLogService</code>等对访问日志进行自定义。引入 Telemetry API，提供标准化的 API 来配置访问日志和监控指标。</p>
+<p>本文将介绍如何通过Telemetry API自定义Istio访问日志， 验证环境如下：</p>
+<ul>
+<li>istio 1.14.1</li>
+<li>kind 1.23.4</li>
+</ul>
+<h2 id="开始之前"><a href="#开始之前" class="headerlink" title="开始之前"></a>开始之前</h2><ul>
+<li>下载istioctl：</li>
+</ul>
+<pre><code class="bash">curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.14.1 TARGET_ARCH=x86_64 sh -
+</code></pre>
+<ul>
+<li>在集群中安装 istio:</li>
+</ul>
+<pre><code class="bash">istioctl install -y
+</code></pre>
+<ul>
+<li>开启 istio 自动注入：</li>
+</ul>
+<pre><code class="bash">kubectl label namespace default istio-injection=enabled --overwrite
+</code></pre>
+<ul>
+<li>安装 <code>sleep</code> 和 <code>httpbin</code>：</li>
+</ul>
+<pre><code class="bash">kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/sleep/sleep.yaml
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/httpbin/httpbin.yaml
+</code></pre>
+<ul>
+<li>检查 istio 安装状态：</li>
+</ul>
+<pre><code class="bash">kubectl get po -nistio-system
+</code></pre>
+<pre><code class="console">NAME                                    READY   STATUS    RESTARTS   AGE
+istio-ingressgateway-57598d7c8b-8hg7m   1/1     Running   0          84s
+istiod-859b487f84-9gq5x                 1/1     Running   0          88s
+</code></pre>
+<ul>
+<li>检查应用注入状态：</li>
+</ul>
+<pre><code class="bash">kubectl get po
+</code></pre>
+<pre><code class="console">NAME                       READY   STATUS    RESTARTS   AGE
+httpbin-85d76b4bb6-wk4qw   2/2     Running   0          2m16s
+sleep-698cfc4445-bkrrl     2/2     Running   0          2m18s
+</code></pre>
+<ul>
+<li>验证日志处于关闭状态：</li>
+</ul>
+<pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/get
+
+kubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxy
+</code></pre>
+<h2 id="配置访问日志"><a href="#配置访问日志" class="headerlink" title="配置访问日志"></a>配置访问日志</h2><p>通过 Telemetry 配置网格级别的访问日志：</p>
+<pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n istio-system -f -
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+spec:
+  accessLogging:
+    - providers:
+      - name: envoy
+EOF
+</code></pre>
+<p>验证访问日志：</p>
+<pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/get
+
+kubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxy
+kubectl logs `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -cistio-proxy
+</code></pre>
+<pre><code class="console"># httpbin 访问日志
+[2022-07-27T15:39:08.021Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 1 1 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:57695 10.244.0.27:80 10.244.0.26:39476 outbound_.8000_._.httpbin.default.svc.cluster.local default
+
+# sleep 访问日志
+[2022-07-27T15:39:08.018Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 5 4 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; outbound|8000||httpbin.default.svc.cluster.local 10.244.0.26:39476 10.96.184.88:8000 10.244.0.26:41784 - default
+</code></pre>
+<h2 id="禁用负载访问日志"><a href="#禁用负载访问日志" class="headerlink" title="禁用负载访问日志"></a>禁用负载访问日志</h2><p>通过如下的配置禁用 <code>httpbin</code> 访问日志：</p>
+<pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n default -f -
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: httpbin-als
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  accessLogging:
+    - providers:
+      - name: envoy
+      disabled: true
+EOF
+</code></pre>
+<p>验证访问日志:</p>
+<pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/get
+
+kubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxy
+kubectl logs `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -cistio-proxy
+</code></pre>
+<p><code>sleep</code> 访问日志正常， <code>httpbin</code>访问日志被关闭：</p>
+<pre><code class="console"># httpbin 访问日志
+[2022-07-27T15:39:08.021Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 1 1 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:57695 10.244.0.27:80 10.244.0.26:39476 outbound_.8000_._.httpbin.default.svc.cluster.local default
+
+# sleep 访问日志
+[2022-07-27T15:39:08.018Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 5 4 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; outbound|8000||httpbin.default.svc.cluster.local 10.244.0.26:39476 10.96.184.88:8000 10.244.0.26:41784 - default
+[2022-07-27T15:44:24.370Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 11 11 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;17c9cf5f-28e9-418a-ac87-41a255c1bd36&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; outbound|8000||httpbin.default.svc.cluster.local 10.244.0.26:55224 10.96.184.88:8000 10.244.0.26:57532 - default
+</code></pre>
+<h2 id="筛选访问日志"><a href="#筛选访问日志" class="headerlink" title="筛选访问日志"></a>筛选访问日志</h2><p>通过如下的配置 <code>httpbin</code> 负载只记录状态码为 <code>500</code> 的访问日志：</p>
+<pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n default -f -
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: httpbin-als
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  accessLogging:
+    - providers:
+      - name: envoy
+      filter:
+        expression: response.code == 500
+EOF
+</code></pre>
+<p>执行以下命令验证:</p>
+<pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/get
+kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/status/500
+</code></pre>
+<p>查看 <code>httpbin</code> 访问日志：</p>
+<pre><code class="bash">kubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxy
+</code></pre>
+<p><code>httpbin</code>只记录响应码为500的请求：</p>
+<pre><code class="console">[2022-07-27T15:55:32.694Z] &quot;GET /status/500 HTTP/1.1&quot; 500 - via_upstream - &quot;-&quot; 0 0 1 0 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;4c6207ba-a9c6-4544-9282-8382c2f8e5a2&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:44495 10.244.0.27:80 10.244.0.26:59444 outbound_.8000_._.httpbin.default.svc.cluster.local default
+</code></pre>
+<h2 id="配置输出-OpenTelemtry-格式日志"><a href="#配置输出-OpenTelemtry-格式日志" class="headerlink" title="配置输出 OpenTelemtry 格式日志"></a>配置输出 OpenTelemtry 格式日志</h2><p>接下来我们通过 Telemetry 将访问日志以 <a href="https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/access_loggers/open_telemetry/v3/logs_service.proto" target="_blank" rel="noopener">OpenTelemetry</a> 格式输出至 <a href="https://github.com/open-telemetry/opentelemetry-collector" target="_blank" rel="noopener">OTel-collector</a> 中。</p>
+<ul>
+<li>安装 <code>OTel-collector</code> 负载，配置从 <code>4317</code> 端口接受日志，并输出至标准输入输出：</li>
+</ul>
+<pre><code class="console">kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/open-telemetry/otel.yaml
+</code></pre>
+<ul>
+<li>升级 istio 配置，增加 <code>ExtensionProvider</code>:</li>
+</ul>
+<pre><code class="console">istioctl install --set profile=demo -y
+</code></pre>
+<ul>
+<li>配置 <code>httpbin</code> 日志输出至 <code>OTel-collector</code>:</li>
+</ul>
+<pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n default -f -
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: httpbin-als
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  accessLogging:
+    - providers:
+      - name: otel
+EOF
+</code></pre>
+<ul>
+<li>验证配置结果：</li>
+</ul>
+<pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/get
+
+kubectl logs -l app=otel-collector -nistio-system --tail=-1
+</code></pre>
+<p>可看到如下输出：</p>
+<pre><code class="console">2022-07-27T16:15:54.163Z        DEBUG   loggingexporter/logging_exporter.go:81  ResourceLog #0
+Resource labels:
+     -&gt; log_name: STRING(otel_envoy_accesslog)
+     -&gt; zone_name: STRING()
+     -&gt; cluster_name: STRING(httpbin.default)
+     -&gt; node_name: STRING(sidecar~10.244.0.27~httpbin-85d76b4bb6-wk4qw.default~default.svc.cluster.local)
+InstrumentationLibraryLogs #0
+InstrumentationLibrary
+LogRecord #0
+Timestamp: 2022-07-27 16:15:53.89784 +0000 UTC
+Severity:
+ShortName:
+Body: [2022-07-27T16:15:53.897Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 1 1 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2db7d544-4a80-91ae-b612-362047bbe11b&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:41313 10.244.0.27:80 10.244.0.26:36580 outbound_.8000_._.httpbin.default.svc.cluster.local default
+
+Trace ID:
+Span ID:
+Flags: 0
+</code></pre>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a href="https://istio.io/latest/docs/tasks/observability/telemetry/" target="_blank" rel="noopener">Telemetry API</a></li>
+<li><a href="https://istio.io/latest/docs/reference/config/telemetry/#AccessLogging" target="_blank" rel="noopener">Telemetry AccessLogging</a></li>
+</ul>
+
+            <hr>
+          </div>
+          <br>
+          <div>
+            
+            <p>
+              <i class="iconfont icon-tag"></i>
+              
+                <a class="hover-with-bg" href="/tags/istio">istio</a>
+              
+                <a class="hover-with-bg" href="/tags/telemetry">telemetry</a>
+              
+                <a class="hover-with-bg" href="/tags/accesslog">accesslog</a>
+              
+            </p>
+            
+              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" rel="nofollow noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-none d-lg-block col-lg-2 toc-container">
+      
+  <div id="toc">
+    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
+    <div id="tocbot"></div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- custom -->
+
+
+<!-- Comments -->
+<div class="col-lg-7 mx-auto nopadding-md">
+  <div class="container comments mx-auto" id="comments">
+    
+  </div>
+</div>
+
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js" ></script>
+<script src="/lib/popper/popper.min.js" ></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
+<script src="/js/main.js" ></script>
+
+  <script src="/js/lazyload.js" ></script>
+
+
+  
+    <script src="/lib/tocbot/tocbot.min.js" ></script>
+  
+  <script src="/js/post.js" ></script>
+
+
+  <script src="/lib/prettify/prettify.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+  <script src="/lib/typed/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "通过Telemetry API自定义Istio访问日志&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+  <script src="/lib/anchor/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content>
+  <meta name="author" content="zirain">
+  <meta name="keywords" content>
+  <title>可观测性简介 ~ dirty code</title>
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css">
+  <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
+  
+    <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>dirty code</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+</nav>
+
+    <div class="view intro-2"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              <br>
+              <p>星期三, 三月 2日 2022, 12:00 凌晨</p>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="py-5 z-depth-3" id="board">
+        <div class="post-content mx-auto">
+          <div class="markdown-body">
+            <h1 id="什么是可观测性？"><a href="#什么是可观测性？" class="headerlink" title="什么是可观测性？"></a>什么是可观测性？</h1><p>可观察性是通过检查系统输出来测量系统内部状态的能力。 如果仅使用来自输出的信息（即传感器数据）就可以估计当前状态，则系统被认为是“可观察的”。 虽然这似乎是最近的流行语，但该术语起源于几十年前的控制理论（关于描述和理解自我调节系统）。 然而，它越来越多地应用于提高分布式 IT 系统的性能。 在这种情况下，可观察性使用三种类型的遥测数据——指标、日志和跟踪——来提供对分布式系统的深入可见性，并允许团队找到众多问题的根本原因并提高系统的性能<a href="https://www.splunk.com/en_us/data-insider/what-is-observability.html" target="_blank" rel="noopener">^observability</a>。 </p>
+<p><img src="https://radar.cncf.io/2020-09-observability.svg" srcset="/img/loading.gif" alt="observability"></p>
+<h2 id="可观察性的三大支柱"><a href="#可观察性的三大支柱" class="headerlink" title="可观察性的三大支柱"></a>可观察性的三大支柱</h2><p><img src="/images/logging_metrics_tracing.png" srcset="/img/loading.gif" alt="logging_metrics_tracing"></p>
+<h2 id="指标"><a href="#指标" class="headerlink" title="指标"></a>指标</h2><p>指标的定义特征是它们是可聚合的：它们是在一段时间内组成单个逻辑规范，计数器或直方图的原子。例如：</p>
+<ul>
+<li>队列的当前深度可以建模为仪表，其更新与最后一个写入者获胜的语义聚合;</li>
+<li>传入的HTTP请求的数量可以建模为计数器，其更新通过简单添加聚合;</li>
+<li>并且可以将观察到的请求持续时间建模为直方图，其更新聚合到时间桶中并生成统计摘要。</li>
+</ul>
+<p>数据获取方式：</p>
+<ul>
+<li>push</li>
+<li>pull</li>
+</ul>
+<p>开源监控系统：</p>
+<ul>
+<li>Nagios</li>
+<li>Zabbix</li>
+<li>OpenFalcon</li>
+<li>Prometheus</li>
+</ul>
+<h2 id="跟踪"><a href="#跟踪" class="headerlink" title="跟踪"></a>跟踪</h2><p>跟踪的唯一定义特征是，它处理的是请求范围的信息。可以绑定到系统中单个事务对象的生命周期的任何数据或元数据位。例如：</p>
+<ul>
+<li>出站 RPC 到远程服务的持续时间;</li>
+<li>发送到数据库的实际 SQL 查询的文本;</li>
+<li>或入站 HTTP 请求的相关 ID。</li>
+</ul>
+<p>分部署追踪系统：</p>
+<ul>
+<li>Dapper</li>
+<li>zipkin</li>
+<li>pinpoint</li>
+<li>Jeager</li>
+</ul>
+<h2 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h2><p>日志记录的定义特征是它处理离散事件。例如：</p>
+<ul>
+<li>应用程序调试或通过旋转的文件描述符通过syslog发送到Elasticsearch（或OK Log，轻推轻推）;</li>
+<li>通过旋转的文件描述符发出的错误消息;</li>
+<li>审计跟踪事件通过Kafka推送到像BigTable这样的数据湖;</li>
+<li>服务调用中提取的特定于请求的元数据，并发送到错误跟踪服务（如 NewRelic）。</li>
+</ul>
+<p>日志存储:</p>
+<ul>
+<li>RDBMS</li>
+<li>NoSQL(MongoDB)</li>
+<li>s3</li>
+<li>ELK</li>
+</ul>
+<p><img src="/images/logging_metrics_tracing2.png" srcset="/img/loading.gif" alt="logging_metrics_tracing"></p>
+<h1 id="Open-Telemetry"><a href="#Open-Telemetry" class="headerlink" title="Open Telemetry"></a>Open Telemetry</h1><p>数据上报标准：</p>
+<ul>
+<li>OpenMetrics</li>
+<li>OpenTracing</li>
+<li>OpenCensus</li>
+</ul>
+<h1 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h1><h2 id="统一查询"><a href="#统一查询" class="headerlink" title="统一查询"></a>统一查询</h2><p>Kiali遇到的问题？ </p>
+<p><a href="https://github.com/kiali/kiali/issues/4278" target="_blank" rel="noopener">https://github.com/kiali/kiali/issues/4278</a> </p>
+<p><a href="https://github.com/open-telemetry/oteps/issues/193" target="_blank" rel="noopener">https://github.com/open-telemetry/oteps/issues/193</a></p>
+<p>数据获取方式：</p>
+<ul>
+<li>API</li>
+<li>DSL（例如PromQL、GraphQL）</li>
+<li>SQL-Like</li>
+</ul>
+<h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><p>实际上，生产系统会遇到许多其他可能影响系统性能的事件，例如升级、重新启动、测试等。</p>
+<pre><code class="console">$ kubectl get event
+
+LAST SEEN   TYPE      REASON             OBJECT                                MESSAGE
+7s          Normal    Scheduled          pod/fortio-deploy-687945c6dc-2k4zv    Successfully assigned default/fortio-deploy-687945c6dc-2k4zv to istio-control-plane
+7s          Normal    Pulled             pod/fortio-deploy-687945c6dc-2k4zv    Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine
+7s          Normal    Created            pod/fortio-deploy-687945c6dc-2k4zv    Created container istio-init
+7s          Normal    Started            pod/fortio-deploy-687945c6dc-2k4zv    Started container istio-init
+7s          Normal    Pulling            pod/fortio-deploy-687945c6dc-2k4zv    Pulling image &quot;fortio/fortio:latest_release&quot;
+4s          Normal    Pulled             pod/fortio-deploy-687945c6dc-2k4zv    Successfully pulled image &quot;fortio/fortio:latest_release&quot; in 2.138293882s
+4s          Normal    Created            pod/fortio-deploy-687945c6dc-2k4zv    Created container fortio
+4s          Normal    Started            pod/fortio-deploy-687945c6dc-2k4zv    Started container fortio
+4s          Normal    Pulled             pod/fortio-deploy-687945c6dc-2k4zv    Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine
+4s          Normal    Created            pod/fortio-deploy-687945c6dc-2k4zv    Created container istio-proxy
+4s          Normal    Started            pod/fortio-deploy-687945c6dc-2k4zv    Started container istio-proxy
+8s          Normal    Killing            pod/fortio-deploy-687945c6dc-jff8d    Stopping container fortio
+8s          Normal    Killing            pod/fortio-deploy-687945c6dc-jff8d    Stopping container istio-proxy
+4s          Warning   Unhealthy          pod/fortio-deploy-687945c6dc-jff8d    Readiness probe failed: HTTP probe failed with statuscode: 503
+8s          Normal    SuccessfulCreate   replicaset/fortio-deploy-687945c6dc   Created pod: fortio-deploy-687945c6dc-2k4zv
+8s          Normal    Killing            pod/sleep-557747455f-p2p5m            Stopping container sleep
+8s          Normal    Killing            pod/sleep-557747455f-p2p5m            Stopping container istio-proxy
+7s          Normal    Scheduled          pod/sleep-557747455f-zvswm            Successfully assigned default/sleep-557747455f-zvswm to istio-control-plane
+7s          Normal    Pulled             pod/sleep-557747455f-zvswm            Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine
+7s          Normal    Created            pod/sleep-557747455f-zvswm            Created container istio-init
+7s          Normal    Started            pod/sleep-557747455f-zvswm            Started container istio-init
+7s          Normal    Pulled             pod/sleep-557747455f-zvswm            Container image &quot;curlimages/curl&quot; already present on machine
+7s          Normal    Created            pod/sleep-557747455f-zvswm            Created container sleep
+6s          Normal    Started            pod/sleep-557747455f-zvswm            Started container sleep
+6s          Normal    Pulled             pod/sleep-557747455f-zvswm            Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine
+6s          Normal    Created            pod/sleep-557747455f-zvswm            Created container istio-proxy
+6s          Normal    Started            pod/sleep-557747455f-zvswm            Started container istio-proxy
+8s          Normal    SuccessfulCreate   replicaset/sleep-557747455f           Created pod: sleep-557747455f-zvswm
+</code></pre>
+<pre><code class="console">Event{name=Unhealthy, source={service=A,instance=a}, ...}
+Event{name=Unhealthy, source={service=A,instance=a}, ...}
+Event{name=Unhealthy, source={service=A,instance=a}, ...}
+Event{name=Unhealthy, source={service=A,instance=a}, ...}
+Event{name=Unhealthy, source={service=A,instance=a}, ...}
+Event{name=Unhealthy, source={service=A,instance=a}, ...}
+</code></pre>
+<pre><code class="console">Event{name=Unhealthy, source={service=A,instance=a}, ...} &lt;value = 6&gt;
+</code></pre>
+<h2 id="RUM-Conjecture"><a href="#RUM-Conjecture" class="headerlink" title="RUM Conjecture"></a>RUM Conjecture</h2><p>数据库研究社区一直在构建存储、访问和更新数据的方法。研究人员总是试图最小化三个量：（1）读取开销（R），（2）更新开销（U），以及（3）内存（或存储）开销（M），我们称之为RUM开销。确定要优化哪些开销以及优化到何种程度，仍然是设计新访问方法过程中的一个重要部分，尤其是在硬件和工作负载随时间变化时。理想的解决方案是始终提供最低读取成本、最低更新成本的访问方法，并且不需要比基本数据更多的内存或存储空间。在实践中，数据结构旨在三个 RUM 开销之间进行折衷，而最佳设计取决于硬件、工作负载和用户期望等多种因素。</p>
+<p>我们提出RUM猜想：<br>在设计访问方法时，我们为两个 RUM 开销设置了一个上限，这意味着第三个开销的硬下限无法进一步减少<a href="http://daslab.seas.harvard.edu/rum-conjecture/" target="_blank" rel="noopener">^rum</a>.</p>
+
+            <hr>
+          </div>
+          <br>
+          <div>
+            
+            <p>
+              <i class="iconfont icon-tag"></i>
+              
+            </p>
+            
+              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" rel="nofollow noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-none d-lg-block col-lg-2 toc-container">
+      
+  <div id="toc">
+    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
+    <div id="tocbot"></div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- custom -->
+
+
+<!-- Comments -->
+<div class="col-lg-7 mx-auto nopadding-md">
+  <div class="container comments mx-auto" id="comments">
+    
+  </div>
+</div>
+
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js" ></script>
+<script src="/lib/popper/popper.min.js" ></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
+<script src="/js/main.js" ></script>
+
+  <script src="/js/lazyload.js" ></script>
+
+
+  
+    <script src="/lib/tocbot/tocbot.min.js" ></script>
+  
+  <script src="/js/post.js" ></script>
+
+
+  <script src="/lib/prettify/prettify.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+  <script src="/lib/typed/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "可观测性简介&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+  <script src="/lib/anchor/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+</body>
+</html>

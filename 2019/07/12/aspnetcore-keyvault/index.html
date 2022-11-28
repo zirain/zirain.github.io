@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content>
+  <meta name="author" content="zirain">
+  <meta name="keywords" content>
+  <title>AspNetCore work with Azure KeyVault ~ dirty code</title>
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css">
+  <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
+  
+    <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>dirty code</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+</nav>
+
+    <div class="view intro-2"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              <br>
+              <p>星期五, 七月 12日 2019, 11:47 中午</p>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="py-5 z-depth-3" id="board">
+        <div class="post-content mx-auto">
+          <div class="markdown-body">
+            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>AspNetCore 使用Azure Key Vault 存储机密配置信息</p>
+<h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><pre><code>aspnetcore-version: 3.0
+azure-cloud: Azure China
+</code></pre><h1 id="Source-Code"><a href="#Source-Code" class="headerlink" title="Source Code"></a>Source Code</h1><pre><code>https://github.com/zirain/AspNetCore-Playground/tree/master/src/Azure/Azure.KeyVault.Web
+</code></pre><h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h1><h2 id="创建Key-Vault"><a href="#创建Key-Vault" class="headerlink" title="创建Key Vault"></a>创建Key Vault</h2><p>按照 <a href="https://docs.azure.cn/zh-cn/key-vault/quick-create-net" target="_blank" rel="noopener">Azure 文档</a> 创建资源</p>
+<h2 id="配置Access-Policy"><a href="#配置Access-Policy" class="headerlink" title="配置Access Policy"></a>配置Access Policy</h2><p>参考 <a href="https://stackoverflow.com/questions/51124843/keyvaulterrorexception-operation-returned-an-invalid-status-code-forbidden" target="_blank" rel="noopener">Stackoverflow</a> 设置Key Vault的Acess Policy</p>
+<h2 id="AspNetCore-KeyVault-Configuration-Provider"><a href="#AspNetCore-KeyVault-Configuration-Provider" class="headerlink" title="AspNetCore KeyVault Configuration Provider"></a>AspNetCore KeyVault Configuration Provider</h2><h3 id="appsettings-json-配置"><a href="#appsettings-json-配置" class="headerlink" title="appsettings.json 配置"></a>appsettings.json 配置</h3><pre><code>{
+  &quot;KeyVault&quot;: {
+    &quot;ClientId&quot;: &quot;&lt;Your ClientId&gt;&quot;,
+    &quot;ClientSecret&quot;: &quot;&lt;Your ClientSecret&gt;&quot;,
+    &quot;DnsName&quot;: &quot;&lt;Your KeyVault DNS Name&gt;&quot;
+  },
+  &quot;Logging&quot;: {
+    &quot;LogLevel&quot;: {
+      &quot;Default&quot;: &quot;Warning&quot;,
+      &quot;Microsoft.Hosting.Lifetime&quot;: &quot;Information&quot;
+    }
+  },
+  &quot;AllowedHosts&quot;: &quot;*&quot;,
+}
+</code></pre><h3 id="Program-cs"><a href="#Program-cs" class="headerlink" title="Program.cs"></a>Program.cs</h3><pre><code>public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateHostBuilder(args).Build().Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =&gt;
+        Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((hostingContext, config) =&gt;
+            {
+                var configRoot = new ConfigurationBuilder()
+                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                    .AddJsonFile(&quot;appsettings.json&quot;, false, true)
+                    .AddJsonFile($&quot;appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json&quot;, optional: true)
+                    .Build();
+
+                config.AddAzureKeyVault(configRoot.GetValue&lt;string&gt;(&quot;KeyVault:DnsName&quot;), configRoot.GetValue&lt;string&gt;(&quot;KeyVault:ClientId&quot;), configRoot.GetValue&lt;string&gt;(&quot;KeyVault:ClientSecret&quot;), new DefaultKeyVaultSecretManager());
+            })
+            .ConfigureWebHostDefaults(webBuilder =&gt;
+            {
+                webBuilder.UseStartup&lt;Startup&gt;();
+            });
+}
+</code></pre><h3 id="重载配置"><a href="#重载配置" class="headerlink" title="重载配置"></a>重载配置</h3><pre><code>public HomeController(
+    IConfiguration configuration,
+    IOptionsSnapshot&lt;CustomOptions&gt; options,
+    ILogger&lt;HomeController&gt; logger)
+{
+    _configuration = configuration as IConfigurationRoot;
+    _options = options;
+    _logger = logger;
+}
+
+public IActionResult Reload()
+{
+    _configuration.Reload();
+
+    return RedirectToAction(&quot;Index&quot;);
+}
+</code></pre><h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>假设配置对象为 <code>Logging.LogLevel.Default</code></p>
+<p>在Azure App Service的Configuration中重写，节点名应该为： <code>Logging:LogLevel:Default</code></p>
+<p>在Key Vault中对应的Secret Name应该是： <code>Logging--LogLevel--Default</code></p>
+<h2 id="使用KeyVault-Keys进行加密-解密"><a href="#使用KeyVault-Keys进行加密-解密" class="headerlink" title="使用KeyVault Keys进行加密/解密"></a>使用KeyVault Keys进行加密/解密</h2><h3 id="KeyVaultOptions"><a href="#KeyVaultOptions" class="headerlink" title="KeyVaultOptions"></a>KeyVaultOptions</h3><pre><code>public class KeyVaultOptions
+{
+    public string ClientId { get; set; }
+
+    public string ClientSecret { get; set; }
+
+    public string DnsName { get; set; }
+
+    public string CryptographyIdentity { get; set; }
+}
+</code></pre><h3 id="CryptographyProvider"><a href="#CryptographyProvider" class="headerlink" title="CryptographyProvider"></a>CryptographyProvider</h3><pre><code>public interface ICryptographyProvider
+{
+    Task&lt;string&gt; EncryptAsync(string plaintext);
+
+    Task&lt;string&gt; DecryptAsync(string ciphertext);
+}
+
+public class KeyVaultCryptographtProvider : ICryptographyProvider
+{
+    public KeyVaultCryptographtProvider(IOptionsSnapshot&lt;KeyVaultOptions&gt; keyVaultOptions)
+    {
+        _options = keyVaultOptions;
+        _client = new KeyVaultClient(async (string authority, string resource, string scope) =&gt;
+        {
+            var authContext = new AuthenticationContext(authority);
+            var clientCred = new ClientCredential(_options.Value?.ClientId, _options.Value?.ClientSecret);
+            var result = await authContext.AcquireTokenAsync(resource, clientCred);
+            if (result == null)
+            {
+                throw new InvalidOperationException(&quot;Failed to retrieve access token for Key Vault&quot;);
+            }
+
+            return result.AccessToken;
+        });
+    }
+
+    private readonly IKeyVaultClient _client;
+    private readonly IOptionsSnapshot&lt;KeyVaultOptions&gt; _options;
+
+    private readonly string _algorithm = JsonWebKeyEncryptionAlgorithm.RSAOAEP;
+
+    public async Task&lt;string&gt; DecryptAsync(string ciphertext)
+    {
+        var encryptedBytes = Convert.FromBase64String(ciphertext);
+        var decryptResult = await _client.DecryptAsync(_options.Value?.CryptographyIdentity, _algorithm, encryptedBytes);
+        if (decryptResult != null)
+        {
+            return Encoding.UTF8.GetString(decryptResult.Result);
+        }
+
+        return null;
+    }
+
+    public async Task&lt;string&gt; EncryptAsync(string plaintext)
+    {
+        var plaintextBytes = Encoding.UTF8.GetBytes(plaintext);
+        var encryptResult = await _client.EncryptAsync(_options.Value?.CryptographyIdentity, _algorithm, plaintextBytes);
+        return encryptResult == null ? null : Convert.ToBase64String(encryptResult.Result);
+    }
+}
+
+</code></pre>
+            <hr>
+          </div>
+          <br>
+          <div>
+            
+            <p>
+              <i class="iconfont icon-tag"></i>
+              
+                <a class="hover-with-bg" href="/tags/aspnetcore">aspnetcore</a>
+              
+                <a class="hover-with-bg" href="/tags/azure">azure</a>
+              
+                <a class="hover-with-bg" href="/tags/key%20vault">key vault</a>
+              
+            </p>
+            
+              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" rel="nofollow noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-none d-lg-block col-lg-2 toc-container">
+      
+  <div id="toc">
+    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
+    <div id="tocbot"></div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- custom -->
+
+
+<!-- Comments -->
+<div class="col-lg-7 mx-auto nopadding-md">
+  <div class="container comments mx-auto" id="comments">
+    
+  </div>
+</div>
+
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js" ></script>
+<script src="/lib/popper/popper.min.js" ></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
+<script src="/js/main.js" ></script>
+
+  <script src="/js/lazyload.js" ></script>
+
+
+  
+    <script src="/lib/tocbot/tocbot.min.js" ></script>
+  
+  <script src="/js/post.js" ></script>
+
+
+  <script src="/lib/prettify/prettify.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+  <script src="/lib/typed/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "AspNetCore work with Azure KeyVault&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+  <script src="/lib/anchor/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+</body>
+</html>

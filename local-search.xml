@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>通过Telemetry API自定义Istio访问日志</title>
+    <link href="undefined2022/07/27/istio-telemetry-api/"/>
+    <url>2022/07/27/istio-telemetry-api/</url>
+    
+    <content type="html"><![CDATA[<p>Istio 为网格内的所有服务通信生成详细的遥测数据，主要包含访问日志、监控指标和调用链。在 v1.11 版本之前我们可以通过<code>MeshConfig</code>中 <code>AccessLogFile</code>、<code>AccessLogFormat</code>以及<code>EnableEnvoyAccessLogService</code>等对访问日志进行自定义。引入 Telemetry API，提供标准化的 API 来配置访问日志和监控指标。</p><p>本文将介绍如何通过Telemetry API自定义Istio访问日志， 验证环境如下：</p><ul><li>istio 1.14.1</li><li>kind 1.23.4</li></ul><h2 id="开始之前"><a href="#开始之前" class="headerlink" title="开始之前"></a>开始之前</h2><ul><li>下载istioctl：</li></ul><pre><code class="bash">curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.14.1 TARGET_ARCH=x86_64 sh -</code></pre><ul><li>在集群中安装 istio:</li></ul><pre><code class="bash">istioctl install -y</code></pre><ul><li>开启 istio 自动注入：</li></ul><pre><code class="bash">kubectl label namespace default istio-injection=enabled --overwrite</code></pre><ul><li>安装 <code>sleep</code> 和 <code>httpbin</code>：</li></ul><pre><code class="bash">kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/sleep/sleep.yamlkubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/httpbin/httpbin.yaml</code></pre><ul><li>检查 istio 安装状态：</li></ul><pre><code class="bash">kubectl get po -nistio-system</code></pre><pre><code class="console">NAME                                    READY   STATUS    RESTARTS   AGEistio-ingressgateway-57598d7c8b-8hg7m   1/1     Running   0          84sistiod-859b487f84-9gq5x                 1/1     Running   0          88s</code></pre><ul><li>检查应用注入状态：</li></ul><pre><code class="bash">kubectl get po</code></pre><pre><code class="console">NAME                       READY   STATUS    RESTARTS   AGEhttpbin-85d76b4bb6-wk4qw   2/2     Running   0          2m16ssleep-698cfc4445-bkrrl     2/2     Running   0          2m18s</code></pre><ul><li>验证日志处于关闭状态：</li></ul><pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/getkubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxy</code></pre><h2 id="配置访问日志"><a href="#配置访问日志" class="headerlink" title="配置访问日志"></a>配置访问日志</h2><p>通过 Telemetry 配置网格级别的访问日志：</p><pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n istio-system -f -apiVersion: telemetry.istio.io/v1alpha1kind: Telemetrymetadata:  name: mesh-defaultspec:  accessLogging:    - providers:      - name: envoyEOF</code></pre><p>验证访问日志：</p><pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/getkubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxykubectl logs `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -cistio-proxy</code></pre><pre><code class="console"># httpbin 访问日志[2022-07-27T15:39:08.021Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 1 1 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:57695 10.244.0.27:80 10.244.0.26:39476 outbound_.8000_._.httpbin.default.svc.cluster.local default# sleep 访问日志[2022-07-27T15:39:08.018Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 5 4 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; outbound|8000||httpbin.default.svc.cluster.local 10.244.0.26:39476 10.96.184.88:8000 10.244.0.26:41784 - default</code></pre><h2 id="禁用负载访问日志"><a href="#禁用负载访问日志" class="headerlink" title="禁用负载访问日志"></a>禁用负载访问日志</h2><p>通过如下的配置禁用 <code>httpbin</code> 访问日志：</p><pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n default -f -apiVersion: telemetry.istio.io/v1alpha1kind: Telemetrymetadata:  name: httpbin-alsspec:  selector:    matchLabels:      app: httpbin  accessLogging:    - providers:      - name: envoy      disabled: trueEOF</code></pre><p>验证访问日志:</p><pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/getkubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxykubectl logs `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -cistio-proxy</code></pre><p><code>sleep</code> 访问日志正常， <code>httpbin</code>访问日志被关闭：</p><pre><code class="console"># httpbin 访问日志[2022-07-27T15:39:08.021Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 1 1 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:57695 10.244.0.27:80 10.244.0.26:39476 outbound_.8000_._.httpbin.default.svc.cluster.local default# sleep 访问日志[2022-07-27T15:39:08.018Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 5 4 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2f4e1d78-33d4-484e-874c-712cb69c9c50&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; outbound|8000||httpbin.default.svc.cluster.local 10.244.0.26:39476 10.96.184.88:8000 10.244.0.26:41784 - default[2022-07-27T15:44:24.370Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 11 11 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;17c9cf5f-28e9-418a-ac87-41a255c1bd36&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; outbound|8000||httpbin.default.svc.cluster.local 10.244.0.26:55224 10.96.184.88:8000 10.244.0.26:57532 - default</code></pre><h2 id="筛选访问日志"><a href="#筛选访问日志" class="headerlink" title="筛选访问日志"></a>筛选访问日志</h2><p>通过如下的配置 <code>httpbin</code> 负载只记录状态码为 <code>500</code> 的访问日志：</p><pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n default -f -apiVersion: telemetry.istio.io/v1alpha1kind: Telemetrymetadata:  name: httpbin-alsspec:  selector:    matchLabels:      app: httpbin  accessLogging:    - providers:      - name: envoy      filter:        expression: response.code == 500EOF</code></pre><p>执行以下命令验证:</p><pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/getkubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/status/500</code></pre><p>查看 <code>httpbin</code> 访问日志：</p><pre><code class="bash">kubectl logs `kubectl get po | grep httpbin | awk &#39;{print $1}&#39;` -cistio-proxy</code></pre><p><code>httpbin</code>只记录响应码为500的请求：</p><pre><code class="console">[2022-07-27T15:55:32.694Z] &quot;GET /status/500 HTTP/1.1&quot; 500 - via_upstream - &quot;-&quot; 0 0 1 0 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;4c6207ba-a9c6-4544-9282-8382c2f8e5a2&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:44495 10.244.0.27:80 10.244.0.26:59444 outbound_.8000_._.httpbin.default.svc.cluster.local default</code></pre><h2 id="配置输出-OpenTelemtry-格式日志"><a href="#配置输出-OpenTelemtry-格式日志" class="headerlink" title="配置输出 OpenTelemtry 格式日志"></a>配置输出 OpenTelemtry 格式日志</h2><p>接下来我们通过 Telemetry 将访问日志以 <a href="https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/access_loggers/open_telemetry/v3/logs_service.proto" target="_blank" rel="noopener">OpenTelemetry</a> 格式输出至 <a href="https://github.com/open-telemetry/opentelemetry-collector" target="_blank" rel="noopener">OTel-collector</a> 中。</p><ul><li>安装 <code>OTel-collector</code> 负载，配置从 <code>4317</code> 端口接受日志，并输出至标准输入输出：</li></ul><pre><code class="console">kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/open-telemetry/otel.yaml</code></pre><ul><li>升级 istio 配置，增加 <code>ExtensionProvider</code>:</li></ul><pre><code class="console">istioctl install --set profile=demo -y</code></pre><ul><li>配置 <code>httpbin</code> 日志输出至 <code>OTel-collector</code>:</li></ul><pre><code class="bash">cat &lt;&lt;EOF | kubectl apply -n default -f -apiVersion: telemetry.istio.io/v1alpha1kind: Telemetrymetadata:  name: httpbin-alsspec:  selector:    matchLabels:      app: httpbin  accessLogging:    - providers:      - name: otelEOF</code></pre><ul><li>验证配置结果：</li></ul><pre><code class="bash">kubectl exec -it `kubectl get po | grep sleep | awk &#39;{print $1}&#39;` -- curl httpbin:8000/getkubectl logs -l app=otel-collector -nistio-system --tail=-1</code></pre><p>可看到如下输出：</p><pre><code class="console">2022-07-27T16:15:54.163Z        DEBUG   loggingexporter/logging_exporter.go:81  ResourceLog #0Resource labels:     -&gt; log_name: STRING(otel_envoy_accesslog)     -&gt; zone_name: STRING()     -&gt; cluster_name: STRING(httpbin.default)     -&gt; node_name: STRING(sidecar~10.244.0.27~httpbin-85d76b4bb6-wk4qw.default~default.svc.cluster.local)InstrumentationLibraryLogs #0InstrumentationLibraryLogRecord #0Timestamp: 2022-07-27 16:15:53.89784 +0000 UTCSeverity:ShortName:Body: [2022-07-27T16:15:53.897Z] &quot;GET /get HTTP/1.1&quot; 200 - via_upstream - &quot;-&quot; 0 605 1 1 &quot;-&quot; &quot;curl/7.84.0-DEV&quot; &quot;2db7d544-4a80-91ae-b612-362047bbe11b&quot; &quot;httpbin:8000&quot; &quot;10.244.0.27:80&quot; inbound|80|| 127.0.0.6:41313 10.244.0.27:80 10.244.0.26:36580 outbound_.8000_._.httpbin.default.svc.cluster.local defaultTrace ID:Span ID:Flags: 0</code></pre><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul><li><a href="https://istio.io/latest/docs/tasks/observability/telemetry/" target="_blank" rel="noopener">Telemetry API</a></li><li><a href="https://istio.io/latest/docs/reference/config/telemetry/#AccessLogging" target="_blank" rel="noopener">Telemetry AccessLogging</a></li></ul>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>istio</tag>
+      
+      <tag>telemetry</tag>
+      
+      <tag>accesslog</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>可观测性简介</title>
+    <link href="undefined2022/03/02/observability/"/>
+    <url>2022/03/02/observability/</url>
+    
+    <content type="html"><![CDATA[<h1 id="什么是可观测性？"><a href="#什么是可观测性？" class="headerlink" title="什么是可观测性？"></a>什么是可观测性？</h1><p>可观察性是通过检查系统输出来测量系统内部状态的能力。 如果仅使用来自输出的信息（即传感器数据）就可以估计当前状态，则系统被认为是“可观察的”。 虽然这似乎是最近的流行语，但该术语起源于几十年前的控制理论（关于描述和理解自我调节系统）。 然而，它越来越多地应用于提高分布式 IT 系统的性能。 在这种情况下，可观察性使用三种类型的遥测数据——指标、日志和跟踪——来提供对分布式系统的深入可见性，并允许团队找到众多问题的根本原因并提高系统的性能<a href="https://www.splunk.com/en_us/data-insider/what-is-observability.html" target="_blank" rel="noopener">^observability</a>。 </p><p><img src="https://radar.cncf.io/2020-09-observability.svg" srcset="/img/loading.gif" alt="observability"></p><h2 id="可观察性的三大支柱"><a href="#可观察性的三大支柱" class="headerlink" title="可观察性的三大支柱"></a>可观察性的三大支柱</h2><p><img src="/images/logging_metrics_tracing.png" srcset="/img/loading.gif" alt="logging_metrics_tracing"></p><h2 id="指标"><a href="#指标" class="headerlink" title="指标"></a>指标</h2><p>指标的定义特征是它们是可聚合的：它们是在一段时间内组成单个逻辑规范，计数器或直方图的原子。例如：</p><ul><li>队列的当前深度可以建模为仪表，其更新与最后一个写入者获胜的语义聚合;</li><li>传入的HTTP请求的数量可以建模为计数器，其更新通过简单添加聚合;</li><li>并且可以将观察到的请求持续时间建模为直方图，其更新聚合到时间桶中并生成统计摘要。</li></ul><p>数据获取方式：</p><ul><li>push</li><li>pull</li></ul><p>开源监控系统：</p><ul><li>Nagios</li><li>Zabbix</li><li>OpenFalcon</li><li>Prometheus</li></ul><h2 id="跟踪"><a href="#跟踪" class="headerlink" title="跟踪"></a>跟踪</h2><p>跟踪的唯一定义特征是，它处理的是请求范围的信息。可以绑定到系统中单个事务对象的生命周期的任何数据或元数据位。例如：</p><ul><li>出站 RPC 到远程服务的持续时间;</li><li>发送到数据库的实际 SQL 查询的文本;</li><li>或入站 HTTP 请求的相关 ID。</li></ul><p>分部署追踪系统：</p><ul><li>Dapper</li><li>zipkin</li><li>pinpoint</li><li>Jeager</li></ul><h2 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h2><p>日志记录的定义特征是它处理离散事件。例如：</p><ul><li>应用程序调试或通过旋转的文件描述符通过syslog发送到Elasticsearch（或OK Log，轻推轻推）;</li><li>通过旋转的文件描述符发出的错误消息;</li><li>审计跟踪事件通过Kafka推送到像BigTable这样的数据湖;</li><li>服务调用中提取的特定于请求的元数据，并发送到错误跟踪服务（如 NewRelic）。</li></ul><p>日志存储:</p><ul><li>RDBMS</li><li>NoSQL(MongoDB)</li><li>s3</li><li>ELK</li></ul><p><img src="/images/logging_metrics_tracing2.png" srcset="/img/loading.gif" alt="logging_metrics_tracing"></p><h1 id="Open-Telemetry"><a href="#Open-Telemetry" class="headerlink" title="Open Telemetry"></a>Open Telemetry</h1><p>数据上报标准：</p><ul><li>OpenMetrics</li><li>OpenTracing</li><li>OpenCensus</li></ul><h1 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h1><h2 id="统一查询"><a href="#统一查询" class="headerlink" title="统一查询"></a>统一查询</h2><p>Kiali遇到的问题？ </p><p><a href="https://github.com/kiali/kiali/issues/4278" target="_blank" rel="noopener">https://github.com/kiali/kiali/issues/4278</a> </p><p><a href="https://github.com/open-telemetry/oteps/issues/193" target="_blank" rel="noopener">https://github.com/open-telemetry/oteps/issues/193</a></p><p>数据获取方式：</p><ul><li>API</li><li>DSL（例如PromQL、GraphQL）</li><li>SQL-Like</li></ul><h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><p>实际上，生产系统会遇到许多其他可能影响系统性能的事件，例如升级、重新启动、测试等。</p><pre><code class="console">$ kubectl get eventLAST SEEN   TYPE      REASON             OBJECT                                MESSAGE7s          Normal    Scheduled          pod/fortio-deploy-687945c6dc-2k4zv    Successfully assigned default/fortio-deploy-687945c6dc-2k4zv to istio-control-plane7s          Normal    Pulled             pod/fortio-deploy-687945c6dc-2k4zv    Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine7s          Normal    Created            pod/fortio-deploy-687945c6dc-2k4zv    Created container istio-init7s          Normal    Started            pod/fortio-deploy-687945c6dc-2k4zv    Started container istio-init7s          Normal    Pulling            pod/fortio-deploy-687945c6dc-2k4zv    Pulling image &quot;fortio/fortio:latest_release&quot;4s          Normal    Pulled             pod/fortio-deploy-687945c6dc-2k4zv    Successfully pulled image &quot;fortio/fortio:latest_release&quot; in 2.138293882s4s          Normal    Created            pod/fortio-deploy-687945c6dc-2k4zv    Created container fortio4s          Normal    Started            pod/fortio-deploy-687945c6dc-2k4zv    Started container fortio4s          Normal    Pulled             pod/fortio-deploy-687945c6dc-2k4zv    Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine4s          Normal    Created            pod/fortio-deploy-687945c6dc-2k4zv    Created container istio-proxy4s          Normal    Started            pod/fortio-deploy-687945c6dc-2k4zv    Started container istio-proxy8s          Normal    Killing            pod/fortio-deploy-687945c6dc-jff8d    Stopping container fortio8s          Normal    Killing            pod/fortio-deploy-687945c6dc-jff8d    Stopping container istio-proxy4s          Warning   Unhealthy          pod/fortio-deploy-687945c6dc-jff8d    Readiness probe failed: HTTP probe failed with statuscode: 5038s          Normal    SuccessfulCreate   replicaset/fortio-deploy-687945c6dc   Created pod: fortio-deploy-687945c6dc-2k4zv8s          Normal    Killing            pod/sleep-557747455f-p2p5m            Stopping container sleep8s          Normal    Killing            pod/sleep-557747455f-p2p5m            Stopping container istio-proxy7s          Normal    Scheduled          pod/sleep-557747455f-zvswm            Successfully assigned default/sleep-557747455f-zvswm to istio-control-plane7s          Normal    Pulled             pod/sleep-557747455f-zvswm            Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine7s          Normal    Created            pod/sleep-557747455f-zvswm            Created container istio-init7s          Normal    Started            pod/sleep-557747455f-zvswm            Started container istio-init7s          Normal    Pulled             pod/sleep-557747455f-zvswm            Container image &quot;curlimages/curl&quot; already present on machine7s          Normal    Created            pod/sleep-557747455f-zvswm            Created container sleep6s          Normal    Started            pod/sleep-557747455f-zvswm            Started container sleep6s          Normal    Pulled             pod/sleep-557747455f-zvswm            Container image &quot;docker.io/istio/proxyv2:1.12.0&quot; already present on machine6s          Normal    Created            pod/sleep-557747455f-zvswm            Created container istio-proxy6s          Normal    Started            pod/sleep-557747455f-zvswm            Started container istio-proxy8s          Normal    SuccessfulCreate   replicaset/sleep-557747455f           Created pod: sleep-557747455f-zvswm</code></pre><pre><code class="console">Event{name=Unhealthy, source={service=A,instance=a}, ...}Event{name=Unhealthy, source={service=A,instance=a}, ...}Event{name=Unhealthy, source={service=A,instance=a}, ...}Event{name=Unhealthy, source={service=A,instance=a}, ...}Event{name=Unhealthy, source={service=A,instance=a}, ...}Event{name=Unhealthy, source={service=A,instance=a}, ...}</code></pre><pre><code class="console">Event{name=Unhealthy, source={service=A,instance=a}, ...} &lt;value = 6&gt;</code></pre><h2 id="RUM-Conjecture"><a href="#RUM-Conjecture" class="headerlink" title="RUM Conjecture"></a>RUM Conjecture</h2><p>数据库研究社区一直在构建存储、访问和更新数据的方法。研究人员总是试图最小化三个量：（1）读取开销（R），（2）更新开销（U），以及（3）内存（或存储）开销（M），我们称之为RUM开销。确定要优化哪些开销以及优化到何种程度，仍然是设计新访问方法过程中的一个重要部分，尤其是在硬件和工作负载随时间变化时。理想的解决方案是始终提供最低读取成本、最低更新成本的访问方法，并且不需要比基本数据更多的内存或存储空间。在实践中，数据结构旨在三个 RUM 开销之间进行折衷，而最佳设计取决于硬件、工作负载和用户期望等多种因素。</p><p>我们提出RUM猜想：<br>在设计访问方法时，我们为两个 RUM 开销设置了一个上限，这意味着第三个开销的硬下限无法进一步减少<a href="http://daslab.seas.harvard.edu/rum-conjecture/" target="_blank" rel="noopener">^rum</a>.</p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>dev tools</title>
+    <link href="undefined2021/10/06/dev-tools/"/>
+    <url>2021/10/06/dev-tools/</url>
+    
+    <content type="html"><![CDATA[<h1 id="IDE-amp-Editor"><a href="#IDE-amp-Editor" class="headerlink" title="IDE &amp; Editor"></a>IDE &amp; Editor</h1><ul><li>Visual Studio Code</li><li>Goland</li><li>IDEA</li><li>Visual Studio 2019</li><li>Clion</li><li>Typora</li><li>Onenote</li></ul><h1 id="shell-amp-terminal"><a href="#shell-amp-terminal" class="headerlink" title="shell &amp; terminal"></a>shell &amp; terminal</h1><ul><li>xshell</li><li>MobaXterm</li><li>zsh</li><li>Windows Terminal</li></ul><h1 id="Database"><a href="#Database" class="headerlink" title="Database"></a>Database</h1><ul><li>DataGrip</li><li>RedisDesktopManager</li></ul><h1 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h1><ul><li>Git</li><li>Switch Hosts</li><li>Docker</li><li>Postman</li><li>KeePass 2</li><li>Microsoft TODO</li></ul>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>tool</tag>
+      
+      <tag>dev</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>国内配置加速go get 加速</title>
+    <link href="undefined2020/03/27/go-get-config/"/>
+    <url>2020/03/27/go-get-config/</url>
+    
+    <content type="html"><![CDATA[<h2 id="Windows"><a href="#Windows" class="headerlink" title="Windows"></a>Windows</h2><h3 id="启用go-module"><a href="#启用go-module" class="headerlink" title="启用go module"></a>启用go module</h3><pre><code>1. 右键 我的电脑 -&gt; 属性 -&gt; 高级系统设置 -&gt; 环境变量2. 在 “[你的用户名]的用户变量” 中点击 ”新建“ 按钮3. 在 “变量名” 输入框并新增 “GO111MODULE”4. 在对应的 “变量值” 输入框中新增 “on”5. 最后点击 “确定” 按钮保存设置</code></pre><h3 id="配置GOPROXY"><a href="#配置GOPROXY" class="headerlink" title="配置GOPROXY"></a>配置GOPROXY</h3><pre><code>1. 右键 我的电脑 -&gt; 属性 -&gt; 高级系统设置 -&gt; 环境变量2. 在 “[你的用户名]的用户变量” 中点击 ”新建“ 按钮3. 在 “变量名” 输入框并新增 “GOPROXY”4. 在对应的 “变量值” 输入框中新增 “https://mirrors.aliyun.com/goproxy/”5. 最后点击 “确定” 按钮保存设置</code></pre>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>go</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>AspNetCore work with Azure KeyVault</title>
+    <link href="undefined2019/07/12/aspnetcore-keyvault/"/>
+    <url>2019/07/12/aspnetcore-keyvault/</url>
+    
+    <content type="html"><![CDATA[<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>AspNetCore 使用Azure Key Vault 存储机密配置信息</p><h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><pre><code>aspnetcore-version: 3.0azure-cloud: Azure China</code></pre><h1 id="Source-Code"><a href="#Source-Code" class="headerlink" title="Source Code"></a>Source Code</h1><pre><code>https://github.com/zirain/AspNetCore-Playground/tree/master/src/Azure/Azure.KeyVault.Web</code></pre><h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h1><h2 id="创建Key-Vault"><a href="#创建Key-Vault" class="headerlink" title="创建Key Vault"></a>创建Key Vault</h2><p>按照 <a href="https://docs.azure.cn/zh-cn/key-vault/quick-create-net" target="_blank" rel="noopener">Azure 文档</a> 创建资源</p><h2 id="配置Access-Policy"><a href="#配置Access-Policy" class="headerlink" title="配置Access Policy"></a>配置Access Policy</h2><p>参考 <a href="https://stackoverflow.com/questions/51124843/keyvaulterrorexception-operation-returned-an-invalid-status-code-forbidden" target="_blank" rel="noopener">Stackoverflow</a> 设置Key Vault的Acess Policy</p><h2 id="AspNetCore-KeyVault-Configuration-Provider"><a href="#AspNetCore-KeyVault-Configuration-Provider" class="headerlink" title="AspNetCore KeyVault Configuration Provider"></a>AspNetCore KeyVault Configuration Provider</h2><h3 id="appsettings-json-配置"><a href="#appsettings-json-配置" class="headerlink" title="appsettings.json 配置"></a>appsettings.json 配置</h3><pre><code>{  &quot;KeyVault&quot;: {    &quot;ClientId&quot;: &quot;&lt;Your ClientId&gt;&quot;,    &quot;ClientSecret&quot;: &quot;&lt;Your ClientSecret&gt;&quot;,    &quot;DnsName&quot;: &quot;&lt;Your KeyVault DNS Name&gt;&quot;  },  &quot;Logging&quot;: {    &quot;LogLevel&quot;: {      &quot;Default&quot;: &quot;Warning&quot;,      &quot;Microsoft.Hosting.Lifetime&quot;: &quot;Information&quot;    }  },  &quot;AllowedHosts&quot;: &quot;*&quot;,}</code></pre><h3 id="Program-cs"><a href="#Program-cs" class="headerlink" title="Program.cs"></a>Program.cs</h3><pre><code>public class Program{    public static void Main(string[] args)    {        CreateHostBuilder(args).Build().Run();    }    public static IHostBuilder CreateHostBuilder(string[] args) =&gt;        Host.CreateDefaultBuilder(args)            .ConfigureAppConfiguration((hostingContext, config) =&gt;            {                var configRoot = new ConfigurationBuilder()                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)                    .AddJsonFile(&quot;appsettings.json&quot;, false, true)                    .AddJsonFile($&quot;appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json&quot;, optional: true)                    .Build();                config.AddAzureKeyVault(configRoot.GetValue&lt;string&gt;(&quot;KeyVault:DnsName&quot;), configRoot.GetValue&lt;string&gt;(&quot;KeyVault:ClientId&quot;), configRoot.GetValue&lt;string&gt;(&quot;KeyVault:ClientSecret&quot;), new DefaultKeyVaultSecretManager());            })            .ConfigureWebHostDefaults(webBuilder =&gt;            {                webBuilder.UseStartup&lt;Startup&gt;();            });}</code></pre><h3 id="重载配置"><a href="#重载配置" class="headerlink" title="重载配置"></a>重载配置</h3><pre><code>public HomeController(    IConfiguration configuration,    IOptionsSnapshot&lt;CustomOptions&gt; options,    ILogger&lt;HomeController&gt; logger){    _configuration = configuration as IConfigurationRoot;    _options = options;    _logger = logger;}public IActionResult Reload(){    _configuration.Reload();    return RedirectToAction(&quot;Index&quot;);}</code></pre><h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>假设配置对象为 <code>Logging.LogLevel.Default</code></p><p>在Azure App Service的Configuration中重写，节点名应该为： <code>Logging:LogLevel:Default</code></p><p>在Key Vault中对应的Secret Name应该是： <code>Logging--LogLevel--Default</code></p><h2 id="使用KeyVault-Keys进行加密-解密"><a href="#使用KeyVault-Keys进行加密-解密" class="headerlink" title="使用KeyVault Keys进行加密/解密"></a>使用KeyVault Keys进行加密/解密</h2><h3 id="KeyVaultOptions"><a href="#KeyVaultOptions" class="headerlink" title="KeyVaultOptions"></a>KeyVaultOptions</h3><pre><code>public class KeyVaultOptions{    public string ClientId { get; set; }    public string ClientSecret { get; set; }    public string DnsName { get; set; }    public string CryptographyIdentity { get; set; }}</code></pre><h3 id="CryptographyProvider"><a href="#CryptographyProvider" class="headerlink" title="CryptographyProvider"></a>CryptographyProvider</h3><pre><code>public interface ICryptographyProvider{    Task&lt;string&gt; EncryptAsync(string plaintext);    Task&lt;string&gt; DecryptAsync(string ciphertext);}public class KeyVaultCryptographtProvider : ICryptographyProvider{    public KeyVaultCryptographtProvider(IOptionsSnapshot&lt;KeyVaultOptions&gt; keyVaultOptions)    {        _options = keyVaultOptions;        _client = new KeyVaultClient(async (string authority, string resource, string scope) =&gt;        {            var authContext = new AuthenticationContext(authority);            var clientCred = new ClientCredential(_options.Value?.ClientId, _options.Value?.ClientSecret);            var result = await authContext.AcquireTokenAsync(resource, clientCred);            if (result == null)            {                throw new InvalidOperationException(&quot;Failed to retrieve access token for Key Vault&quot;);            }            return result.AccessToken;        });    }    private readonly IKeyVaultClient _client;    private readonly IOptionsSnapshot&lt;KeyVaultOptions&gt; _options;    private readonly string _algorithm = JsonWebKeyEncryptionAlgorithm.RSAOAEP;    public async Task&lt;string&gt; DecryptAsync(string ciphertext)    {        var encryptedBytes = Convert.FromBase64String(ciphertext);        var decryptResult = await _client.DecryptAsync(_options.Value?.CryptographyIdentity, _algorithm, encryptedBytes);        if (decryptResult != null)        {            return Encoding.UTF8.GetString(decryptResult.Result);        }        return null;    }    public async Task&lt;string&gt; EncryptAsync(string plaintext)    {        var plaintextBytes = Encoding.UTF8.GetBytes(plaintext);        var encryptResult = await _client.EncryptAsync(_options.Value?.CryptographyIdentity, _algorithm, plaintextBytes);        return encryptResult == null ? null : Convert.ToBase64String(encryptResult.Result);    }}</code></pre>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>aspnetcore</tag>
+      
+      <tag>azure</tag>
+      
+      <tag>key vault</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>AspNetCore 上传大文件</title>
+    <link href="undefined2019/05/07/aspnetcore-upload-large-file/"/>
+    <url>2019/05/07/aspnetcore-upload-large-file/</url>
+    
+    <content type="html"><![CDATA[<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>AspNetCore 在上传较大文件时收到错误 404.13</p><h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><pre><code>aspnetcore-version: 2.1host-server: windowsuse-iis: true</code></pre><h1 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h1><p><a href="https://github.com/aspnet/Announcements/issues/267" target="_blank" rel="noopener">New default 30 MB (~28.6 MiB) max request body size limit</a></p><h1 id="IIS处理"><a href="#IIS处理" class="headerlink" title="IIS处理"></a>IIS处理</h1><p>针对Kestrel的修改，无法修改IIS的默认设置；本地开始时如果使用IISExpress 或 生产部署在IIS中依然会碰到这个问题。</p><h1 id="通过web-config解决IIS的问题"><a href="#通过web-config解决IIS的问题" class="headerlink" title="通过web.config解决IIS的问题"></a>通过web.config解决IIS的问题</h1><p><code>dotnet publish</code>命令会生成默认的web.config文件，在尽量不修改默认行为下，可做如下处理：</p><p>假设 BuildConfig=Release<br>新建 web.Release.config<br>在文件输入</p><pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;configuration  xmlns:xdt=&quot;http://schemas.microsoft.com/XML-Document-Transform&quot;&gt;  &lt;!-- To customize the asp.net core module uncomment and edit the following section.   For more info see https://go.microsoft.com/fwlink/?linkid=838655 --&gt;  &lt;!--  &lt;system.webServer&gt;    &lt;handlers&gt;      &lt;remove name=&quot;aspNetCore&quot;/&gt;      &lt;add name=&quot;aspNetCore&quot; path=&quot;*&quot; verb=&quot;*&quot; modules=&quot;AspNetCoreModule&quot; resourceType=&quot;Unspecified&quot;/&gt;    &lt;/handlers&gt;    &lt;aspNetCore processPath=&quot;%LAUNCHER_PATH%&quot; arguments=&quot;%LAUNCHER_ARGS%&quot; stdoutLogEnabled=&quot;false&quot; stdoutLogFile=&quot;.\logs\stdout&quot; /&gt;  &lt;/system.webServer&gt;  --&gt;    &lt;location&gt;        &lt;system.webServer&gt;            &lt;security xdt:Transform=&quot;InsertIfMissing&quot;&gt;                &lt;requestFiltering xdt:Transform=&quot;InsertIfMissing&quot;&gt;          &lt;!-- Measured in Bytes --&gt;          &lt;!-- 300MB = 314572800 = 300 * 1024 * 1024 --&gt;                    &lt;requestLimits xdt:Transform=&quot;InsertIfMissing&quot; maxAllowedContentLength=&quot;314572800&quot;/&gt;                 &lt;/requestFiltering&gt;            &lt;/security&gt;        &lt;/system.webServer&gt;    &lt;/location&gt;&lt;/configuration&gt;</code></pre><p><a href="https://github.com/zirain/AspNetCore-Playground/tree/master/src/WebConfigTransform/WebConfigTransform" target="_blank" rel="noopener">Github demo</a></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>aspnetcore</tag>
+      
+      <tag>IIS</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>helm-with-k8s</title>
+    <link href="undefined2019/04/22/helm-with-k8s/"/>
+    <url>2019/04/22/helm-with-k8s/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Install-Helm"><a href="#Install-Helm" class="headerlink" title="Install Helm"></a>Install Helm</h1><p><code>helm version</code></p><h1 id="Helm-Init"><a href="#Helm-Init" class="headerlink" title="Helm Init"></a>Helm Init</h1><p><code>helm init --client-only --stable-repo-url https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts/</code><br><code>helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/</code><br><code>helm repo update</code><br><code>helm repo list</code></p><h1 id="Install-Helm-Tiller"><a href="#Install-Helm-Tiller" class="headerlink" title="Install Helm Tiller"></a>Install Helm Tiller</h1><p><code>helm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.14.2  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts</code></p><p><code>helm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.14.2 --tiller-tls-cert /etc/kubernetes/ssl/tiller001.pem --tiller-tls-key /etc/kubernetes/ssl/tiller001-key.pem --tls-ca-cert /etc/kubernetes/ssl/ca.pem --tiller-namespace kube-system --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts</code></p><h2 id="创建-Kubernetes-的服务帐号和绑定角色"><a href="#创建-Kubernetes-的服务帐号和绑定角色" class="headerlink" title="创建 Kubernetes 的服务帐号和绑定角色"></a>创建 Kubernetes 的服务帐号和绑定角色</h2><p><code>kubectl create serviceaccount --namespace kube-system tiller</code><br><code>kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller</code><br><code>kubectl patch deploy --namespace kube-system tiller-deploy -p &#39;{&quot;spec&quot;:{&quot;template&quot;:{&quot;spec&quot;:{&quot;serviceAccount&quot;:&quot;tiller&quot;}}}}&#39; deployment.extensions &quot;tiller-deploy&quot; patched</code></p><h2 id="查看是否授权成功"><a href="#查看是否授权成功" class="headerlink" title="查看是否授权成功"></a>查看是否授权成功</h2><p><code>kubectl get deploy --namespace kube-system   tiller-deploy  --output yaml|grep  serviceAccount</code></p><h2 id="验证-Tiller-是否安装成功"><a href="#验证-Tiller-是否安装成功" class="headerlink" title="验证 Tiller 是否安装成功"></a>验证 Tiller 是否安装成功</h2><p><code>kubectl -n kube-system get pods|grep tiller</code><br><code>helm version</code></p><h2 id="卸载-Helm-服务器端-Tiller"><a href="#卸载-Helm-服务器端-Tiller" class="headerlink" title="卸载 Helm 服务器端 Tiller"></a>卸载 Helm 服务器端 Tiller</h2><p><code>helm reset</code><br><code>helm reset --force</code></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>docker</tag>
+      
+      <tag>helm</tag>
+      
+      <tag>k8s</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Install minikube on Mac Pro</title>
+    <link href="undefined2019/04/04/k8s-on-mac/"/>
+    <url>2019/04/04/k8s-on-mac/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Install-minikube"><a href="#Install-minikube" class="headerlink" title="Install minikube"></a>Install minikube</h1><p>使用阿里云修改的版本，避免国内无法连接 <a href="https://k8s.gcr.io" target="_blank" rel="noopener">k8s.gcr.io</a> 导致失败</p><p><code>curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.4.0/minikube-darwin-amd64 &amp;&amp; chmod +x minikube &amp;&amp; sudo mv minikube /usr/local/bin/</code></p><h1 id="Install-VM-providers"><a href="#Install-VM-providers" class="headerlink" title="Install VM providers"></a>Install VM providers</h1><h2 id="Install-Hyperkit-driver"><a href="#Install-Hyperkit-driver" class="headerlink" title="Install Hyperkit driver"></a>Install Hyperkit driver</h2><p><code>brew install docker-machine-driver-hyperkit</code></p><p>安装完成后需要执行如下命令：</p><p>docker-machine-driver-hyperkit need root owner and uid</p><p><code>sudo chown root:wheel /usr/local/opt/docker-machine-driver-hyperkit/bin/docker-machine-driver-hyperkit</code></p><p><code>sudo chmod u+s /usr/local/opt/docker-machine-driver-hyperkit/bin/docker-machine-driver-hyperkit</code></p><h2 id="Use-VM-driver"><a href="#Use-VM-driver" class="headerlink" title="Use VM driver"></a>Use VM driver</h2><p><code>minikube config set vm-driver hyperkit</code></p><h1 id="Start-minikube"><a href="#Start-minikube" class="headerlink" title="Start minikube"></a>Start minikube</h1><p><code>minikube start</code></p><h1 id="Start-minikube-dashboard"><a href="#Start-minikube-dashboard" class="headerlink" title="Start minikube dashboard"></a>Start minikube dashboard</h1><p><code>minikube dashboard</code></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>docker</tag>
+      
+      <tag>k8s</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Install Kubernetes on Windows 10</title>
+    <link href="undefined2019/01/27/k8s-on-win10/"/>
+    <url>2019/01/27/k8s-on-win10/</url>
+    
+    <content type="html"><![CDATA[<h2 id="Install-Minikube"><a href="#Install-Minikube" class="headerlink" title="Install Minikube"></a>Install Minikube</h2><h3 id="准备条件"><a href="#准备条件" class="headerlink" title="准备条件"></a>准备条件</h3><ul><li>chocolate</li><li>VPN</li></ul><h3 id="安装minikube"><a href="#安装minikube" class="headerlink" title="安装minikube"></a>安装minikube</h3><p><code>choco install minikube kubernetes-cli</code></p><p>国内无法连接 <a href="https://k8s.gcr.io" target="_blank" rel="noopener">k8s.gcr.io</a> , 可以使用aliyun提供的minikube来替代，下载 <a href="https://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.12.1/minikube-windows-amd64.exe?spm=a2c6h.12873639.0.0.ab202043XcPh8G&amp;file=minikube-windows-amd64.exe" target="_blank" rel="noopener">minikube-windows-amd64.exe</a> 文件，重命名为 <code>minikube.exe</code>，并设置环境变量</p><p><a href="https://developer.aliyun.com/article/221687" target="_blank" rel="noopener">参考资料</a></p><h3 id="设置hyper-v-switch"><a href="#设置hyper-v-switch" class="headerlink" title="设置hyper-v switch"></a>设置hyper-v switch</h3><h3 id="启动minikube"><a href="#启动minikube" class="headerlink" title="启动minikube"></a>启动minikube</h3><pre><code>minikube start --registry-mirror=https://hub-mirror.c.163.com --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot; --image-mirror-country cn --iso-url=https://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/iso/minikube-v1.12.0.iso --memory=4096</code></pre><h3 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h3><p>如果你遇到这个错误，Error restarting cluster: restarting kube-proxy: waiting for kube-proxy to be up for configmap update: timed out waiting for the condition`</p><p>通过 <code>minikube delete</code>，<code>minikube start</code> 可以解决</p><h3 id="启动dashboard"><a href="#启动dashboard" class="headerlink" title="启动dashboard"></a>启动dashboard</h3><p><code>minikube dashboard</code></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>docker</tag>
+      
+      <tag>k8s</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Docker(2)</title>
+    <link href="undefined2019/01/26/Docker-2/"/>
+    <url>2019/01/26/Docker-2/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h2 id="访问宿主机"><a href="#访问宿主机" class="headerlink" title="访问宿主机"></a>访问宿主机</h2><h3 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h3><p>宿主机执行ipconfig<br>会看到docker0那个ip，可以使用来访问宿主机</p><h3 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h3><p>docker 18.03 加入了一个 feature，在容器中可以通过 host.docker.internal来访问主机<br>Use your internal IP address or connect to the special DNS name host.docker.internal which will resolve to the internal IP address used by the host.</p><h2 id="查看IP"><a href="#查看IP" class="headerlink" title="查看IP"></a>查看IP</h2><h3 id="查看容器IP"><a href="#查看容器IP" class="headerlink" title="查看容器IP"></a>查看容器IP</h3><p><code>docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container_id></container_id></code></p><h3 id="查看所有容器的IP"><a href="#查看所有容器的IP" class="headerlink" title="查看所有容器的IP"></a>查看所有容器的IP</h3><p><code>docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}' $(docker ps -aq)</code></p><h2 id="删除容器"><a href="#删除容器" class="headerlink" title="删除容器"></a>删除容器</h2><h3 id="删除指定容器"><a href="#删除指定容器" class="headerlink" title="删除指定容器"></a>删除指定容器</h3><p><code>docker rm &lt;container_id&gt;</code></p><p><code>docker rm &lt;container_name&gt;</code></p><p><code>docker rm -f &lt;container_id&gt;</code></p><p><code>docker rm -f &lt;container_name&gt;</code></p><h3 id="删除所有容器"><a href="#删除所有容器" class="headerlink" title="删除所有容器"></a>删除所有容器</h3><p><code>docker rm &#96;docker ps -a -q&#96;</code></p><h2 id="删除镜像"><a href="#删除镜像" class="headerlink" title="删除镜像"></a>删除镜像</h2><p><code>docker image rm &lt;image_id&gt;</code></p><p><code>docker rmi &lt;image_id&gt;</code></p><h3 id="删除所有镜像"><a href="#删除所有镜像" class="headerlink" title="删除所有镜像"></a>删除所有镜像</h3><p><code>docker rmi &#96;docker images -a -q&#96;</code></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>docker</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Docker(1)</title>
+    <link href="undefined2019/01/23/Docker-1/"/>
+    <url>2019/01/23/Docker-1/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h2 id="Install-Elasticsearch-amp-Kibana"><a href="#Install-Elasticsearch-amp-Kibana" class="headerlink" title="Install Elasticsearch &amp; Kibana"></a>Install Elasticsearch &amp; Kibana</h2><h3 id="create-network"><a href="#create-network" class="headerlink" title="create network"></a>create network</h3><p><code>docker network create es-network</code></p><h3 id="install-elasticsearch"><a href="#install-elasticsearch" class="headerlink" title="install elasticsearch"></a>install elasticsearch</h3><p><code>docker run -d --name elasticsearch --net es-network -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; docker.elastic.co/elasticsearch/elasticsearch:6.5.4</code></p><h3 id="install-kibana"><a href="#install-kibana" class="headerlink" title="install kibana"></a>install kibana</h3><p><code>docker run -d --name kibana --net es-network -p 5601:5601 docker.elastic.co/kibana/kibana:6.5.4</code></p><h2 id="Run-consul-in-devlopment-mode"><a href="#Run-consul-in-devlopment-mode" class="headerlink" title="Run consul in devlopment mode"></a>Run consul in devlopment mode</h2><p><code>docker run --name consul1 -p 8500:8500 consul</code></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>docker</tag>
+      
+      <tag>elk</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Install Jenkins on Docker</title>
+    <link href="undefined2018/12/04/Jenkins-Docker/"/>
+    <url>2018/12/04/Jenkins-Docker/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h2 id="List-containers"><a href="#List-containers" class="headerlink" title="List containers"></a>List containers</h2><p><code>docker ps</code></p><h2 id="Stop-container"><a href="#Stop-container" class="headerlink" title="Stop container"></a>Stop container</h2><p><code>docker stop [docker-id]</code></p><h2 id="Remove-container"><a href="#Remove-container" class="headerlink" title="Remove container"></a>Remove container</h2><p><code>docker rm [docker-id]</code></p><h2 id="Run-cmd-in-container"><a href="#Run-cmd-in-container" class="headerlink" title="Run cmd in container"></a>Run cmd in container</h2><p><code>docker exec -it [docker-name] [cmd] [options]</code></p><h2 id="Install-Jenkins"><a href="#Install-Jenkins" class="headerlink" title="Install Jenkins"></a>Install Jenkins</h2><p><code>dcoker run -d --name jenkins -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts</code></p><h2 id="Install-redis"><a href="#Install-redis" class="headerlink" title="Install redis"></a>Install redis</h2><p><code>docker run -d --name my-redis -p 6379:6379 redis</code></p><h2 id="Install-rabbitmq"><a href="#Install-rabbitmq" class="headerlink" title="Install rabbitmq"></a>Install rabbitmq</h2><p><code>docker run -d --name my-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management</code></p><h3 id="Enable-rabbitmq-web-management"><a href="#Enable-rabbitmq-web-management" class="headerlink" title="Enable rabbitmq web management"></a>Enable rabbitmq web management</h3><p><code>docker exec -it [docker-id] rabbitmq-plugins enable rabbitmq_management</code></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>docker</tag>
+      
+      <tag>jenkins</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Install kafka on Win10 with WSL</title>
+    <link href="undefined2018/10/28/Kafka/"/>
+    <url>2018/10/28/Kafka/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Kafka"><a href="#Kafka" class="headerlink" title="Kafka"></a>Kafka</h1><h2 id="Install-kafka-on-Win10-WSL"><a href="#Install-kafka-on-Win10-WSL" class="headerlink" title="Install kafka on Win10 WSL"></a>Install kafka on Win10 WSL</h2><h3 id="Install-Java"><a href="#Install-Java" class="headerlink" title="Install Java"></a>Install Java</h3><ul><li><p><code>sudo apt update</code></p></li><li><p><code>sudo apt install openjdk-8-jdk</code></p><p><code>/usr/lib/jvm</code></p></li></ul><h3 id="Install-zookeeper"><a href="#Install-zookeeper" class="headerlink" title="Install zookeeper"></a>Install zookeeper</h3><ul><li><p><code>sudo apt install zookeeper</code></p><p><code>/usr/share/zookeeper</code></p><p><code>/etc/zookeeper</code></p></li><li><p><code>sudo /usr/share/zookeeper/bin/zkServer.sh start</code></p></li><li><p><code>sudo /usr/share/zookeeper/bin/zkServer.sh status</code></p></li><li><p><code>telnet localhost 2181</code></p></li></ul><h3 id="Install-Kafka"><a href="#Install-Kafka" class="headerlink" title="Install Kafka"></a>Install Kafka</h3><ul><li><p>下载</p><p><code>wget http://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.0.0/kafka_2.11-2.0.0.tgz</code></p></li><li><p>解压&amp;安装</p><p><code>sudo tar -zxf kafka_2.11-2.0.0.tgz</code></p><p><code>sudo mkdir -p /usr/local/kafka</code></p><p><code>sudo mv kafka_2.11-2.0.0 /usr/local/kafka</code></p><p><code>sudo mkdir -p /tmp/kafka-logs</code></p></li><li><p>启动Kafka</p><p><code>sudo cd /usr/local/kafka/kafka_2.11-2.0.0</code></p><p><code>sudo bin/kafka-server-start.sh -daemon config/server.properties</code></p></li><li><p>测试安装</p><ul><li><p>创建主题</p><p><code>sudo bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test</code></p><p><code>sudo bin/kafka-topics.sh --zookeeper localhost:2181 --describe --topic test</code></p><p><code>sudo bin/kafka-topics.sh --list --zookeeper localhost:2181</code></p></li><li><p>发布消息</p><p><code>sudo bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test</code></p></li><li><p>读取消息</p><p><code>sudo bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning</code></p></li></ul></li></ul>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>kafka</tag>
+      
+      <tag>wsl</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  
+</search>

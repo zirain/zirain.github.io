@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content>
+  <meta name="author" content="zirain">
+  <meta name="keywords" content>
+  <title>dirty code</title>
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css">
+  <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
+  
+    <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+</head>
+
+
+<body>
+  <header style="height: 100vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>dirty code</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+</nav>
+
+    <div class="view intro-2"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+          </div>
+
+          
+            <div class="scroll-down-bar">
+              <i class="fa fa-angle-down scroll-down-arrow"></i>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      <div class="container nopadding-md">
+        <div class="py-5 z-depth-3" id="board">
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2022/07/27/istio-telemetry-api/">
+        <p class="h4 index-header">通过Telemetry API自定义Istio访问日志</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">Istio 为网格内的所有服务通信生成详细的遥测数据，主要包含访问日志、监控指标和调用链。在 v1.11 版本之前我们可以通过MeshConfig中 AccessLogFile、AccessLogFormat以及EnableEnvoyAccessLogService等对访问日志进行自定义。引入 Telemetry API，提供标准化的 API 来配置访问日志和监控指标。
+本文将介绍如何通过Telemetry API自定义Istio访问日志， 验证环境如下：
+
+istio 1.14.1
+kind 1.23.4
+
+开始之前
+下载istioctl：
+
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.14.1 TARGET_ARCH=x86_64 sh -
+
+
+在集群中安装 istio:
+
+istioctl install -y
+
+
+开启 istio 自动注入：
+
+kubectl label namespace default istio-injection=enabled --overwrite
+
+
+安装 sleep 和 ht</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2022-07-27&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/istio">istio</a>&nbsp;
+          
+            <a href="/tags/telemetry">telemetry</a>&nbsp;
+          
+            <a href="/tags/accesslog">accesslog</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2022/03/02/observability/">
+        <p class="h4 index-header">可观测性简介</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">什么是可观测性？可观察性是通过检查系统输出来测量系统内部状态的能力。 如果仅使用来自输出的信息（即传感器数据）就可以估计当前状态，则系统被认为是“可观察的”。 虽然这似乎是最近的流行语，但该术语起源于几十年前的控制理论（关于描述和理解自我调节系统）。 然而，它越来越多地应用于提高分布式 IT 系统的性能。 在这种情况下，可观察性使用三种类型的遥测数据——指标、日志和跟踪——来提供对分布式系统的深入可见性，并允许团队找到众多问题的根本原因并提高系统的性能^observability。 
+
+可观察性的三大支柱
+指标指标的定义特征是它们是可聚合的：它们是在一段时间内组成单个逻辑规范，计数器或直方图的原子。例如：
+
+队列的当前深度可以建模为仪表，其更新与最后一个写入者获胜的语义聚合;
+传入的HTTP请求的数量可以建模为计数器，其更新通过简单添加聚合;
+并且可以将观察到的请求持续时间建模为直方图，其更新聚合到时间桶中并生成统计摘要。
+
+数据获取方式：
+
+push
+pull
+
+开源监控系统：
+
+Nagios
+Zabbix
+OpenFalcon
+Prometheus
+
+跟踪跟踪的唯一定义特征是，它处</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2022-03-02&nbsp;&nbsp;
+        
+        
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2021/10/06/dev-tools/">
+        <p class="h4 index-header">dev tools</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">IDE &amp; Editor
+Visual Studio Code
+Goland
+IDEA
+Visual Studio 2019
+Clion
+Typora
+Onenote
+
+shell &amp; terminal
+xshell
+MobaXterm
+zsh
+Windows Terminal
+
+Database
+DataGrip
+RedisDesktopManager
+
+Others
+Git
+Switch Hosts
+Docker
+Postman
+KeePass 2
+Microsoft TODO
+
+</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2021-10-06&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/tool">tool</a>&nbsp;
+          
+            <a href="/tags/dev">dev</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2020/03/27/go-get-config/">
+        <p class="h4 index-header">国内配置加速go get 加速</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">Windows启用go module1. 右键 我的电脑 -&gt; 属性 -&gt; 高级系统设置 -&gt; 环境变量
+2. 在 “[你的用户名]的用户变量” 中点击 ”新建“ 按钮
+3. 在 “变量名” 输入框并新增 “GO111MODULE”
+4. 在对应的 “变量值” 输入框中新增 “on”
+5. 最后点击 “确定” 按钮保存设置
+配置GOPROXY1. 右键 我的电脑 -&gt; 属性 -&gt; 高级系统设置 -&gt; 环境变量
+2. 在 “[你的用户名]的用户变量” 中点击 ”新建“ 按钮
+3. 在 “变量名” 输入框并新增 “GOPROXY”
+4. 在对应的 “变量值” 输入框中新增 “https://mirrors.aliyun.com/goproxy/”
+5. 最后点击 “确定” 按钮保存设置
+</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2020-03-27&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/go">go</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/07/12/aspnetcore-keyvault/">
+        <p class="h4 index-header">AspNetCore work with Azure KeyVault</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">背景AspNetCore 使用Azure Key Vault 存储机密配置信息
+环境aspnetcore-version: 3.0
+azure-cloud: Azure China
+Source Codehttps://github.com/zirain/AspNetCore-Playground/tree/master/src/Azure/Azure.KeyVault.Web
+步骤创建Key Vault按照 Azure 文档 创建资源
+配置Access Policy参考 Stackoverflow 设置Key Vault的Acess Policy
+AspNetCore KeyVault Configuration Providerappsettings.json 配置{
+  &quot;KeyVault&quot;: {
+    &quot;ClientId&quot;: &quot;&lt;Your ClientId&gt;&quot;,
+    &quot;ClientSecret&quot;: &quot;&lt;Your ClientSecret&gt;&quot;,
+   </div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-07-12&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/aspnetcore">aspnetcore</a>&nbsp;
+          
+            <a href="/tags/azure">azure</a>&nbsp;
+          
+            <a href="/tags/key%20vault">key vault</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/05/07/aspnetcore-upload-large-file/">
+        <p class="h4 index-header">AspNetCore 上传大文件</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">背景AspNetCore 在上传较大文件时收到错误 404.13
+环境aspnetcore-version: 2.1
+host-server: windows
+use-iis: true
+原因New default 30 MB (~28.6 MiB) max request body size limit
+IIS处理针对Kestrel的修改，无法修改IIS的默认设置；本地开始时如果使用IISExpress 或 生产部署在IIS中依然会碰到这个问题。
+通过web.config解决IIS的问题dotnet publish命令会生成默认的web.config文件，在尽量不修改默认行为下，可做如下处理：
+假设 BuildConfig=Release新建 web.Release.config在文件输入
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;configuration  xmlns:xdt=&quot;http://schemas.microsoft.com/XML-Document-Transfo</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-05-07&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/aspnetcore">aspnetcore</a>&nbsp;
+          
+            <a href="/tags/IIS">IIS</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/04/22/helm-with-k8s/">
+        <p class="h4 index-header">helm-with-k8s</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">Install Helmhelm version
+Helm Inithelm init --client-only --stable-repo-url https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts/helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/helm repo updatehelm repo list
+Install Helm Tillerhelm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.14.2  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+helm init --service-accou</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-04-22&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/helm">helm</a>&nbsp;
+          
+            <a href="/tags/k8s">k8s</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/04/04/k8s-on-mac/">
+        <p class="h4 index-header">Install minikube on Mac Pro</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">Install minikube使用阿里云修改的版本，避免国内无法连接 k8s.gcr.io 导致失败
+curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.4.0/minikube-darwin-amd64 &amp;&amp; chmod +x minikube &amp;&amp; sudo mv minikube /usr/local/bin/
+Install VM providersInstall Hyperkit driverbrew install docker-machine-driver-hyperkit
+安装完成后需要执行如下命令：
+docker-machine-driver-hyperkit need root owner and uid
+sudo chown root:wheel /usr/local/opt/docker-machine-driver-hyperkit/bin/docker-machine-driver-hyperkit
+sud</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-04-04&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/k8s">k8s</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/01/27/k8s-on-win10/">
+        <p class="h4 index-header">Install Kubernetes on Windows 10</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">Install Minikube准备条件
+chocolate
+VPN
+
+安装minikubechoco install minikube kubernetes-cli
+国内无法连接 k8s.gcr.io , 可以使用aliyun提供的minikube来替代，下载 minikube-windows-amd64.exe 文件，重命名为 minikube.exe，并设置环境变量
+参考资料
+设置hyper-v switch启动minikubeminikube start --registry-mirror=https://hub-mirror.c.163.com --vm-driver=&quot;hyperv&quot; --hyperv-virtual-switch=&quot;minikubeSwitch&quot; --image-mirror-country cn --iso-url=https://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/iso/minikube-v1.12.0.iso --memory=4096
+错误处理如</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-01-27&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+            <a href="/tags/k8s">k8s</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/01/26/Docker-2/">
+        <p class="h4 index-header">Docker(2)</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">Docker访问宿主机方案一宿主机执行ipconfig会看到docker0那个ip，可以使用来访问宿主机
+方案二docker 18.03 加入了一个 feature，在容器中可以通过 host.docker.internal来访问主机Use your internal IP address or connect to the special DNS name host.docker.internal which will resolve to the internal IP address used by the host.
+查看IP查看容器IP
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' 
+
+查看所有容器的IP
+docker inspect --format='{{.Name}} {{.State.Running}} {{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}' $(docker ps -aq)
+
+删除容器删除指定容器docker rm &l</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-01-26&nbsp;&nbsp;
+        
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/docker">docker</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+
+
+  <nav aria-label="index posts navigation">
+    <ul class="pagination pg-blue justify-content-center mt-5">
+      
+      
+        <li class="page-item">
+          <a class="page-link" href="/page/2/#board">下一页</a>
+        </li>
+      
+    </ul>
+  </nav>
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js" ></script>
+<script src="/lib/popper/popper.min.js" ></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
+<script src="/js/main.js" ></script>
+
+  <script src="/js/lazyload.js" ></script>
+
+
+
+  <script src="/lib/prettify/prettify.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+  <script src="/lib/typed/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "things change, roll with it!&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+  <script src="/lib/anchor/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+</body>
+</html>
