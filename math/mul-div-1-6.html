@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>1-6乘除练习 | 二年级数学特训</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(145deg, #2b6e9e 0%, #1b4f6e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 16px;
+            margin: 0;
+        }
+        .game-container {
+            max-width: 650px;
+            width: 100%;
+            background: #fef9e6;
+            border-radius: 64px 64px 48px 48px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: #ffcf4a;
+            padding: 18px 16px 10px;
+            text-align: center;
+            color: #3b2a1f;
+        }
+        .header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .timer-box {
+            background: #2c3e2b;
+            color: #f3ffb6;
+            display: inline-flex;
+            gap: 20px;
+            padding: 6px 24px;
+            border-radius: 60px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .main {
+            padding: 20px 18px 28px;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .question-card {
+            background: white;
+            border-radius: 48px;
+            box-shadow: 0 8px 0 #cb8b2e;
+            padding: 30px 16px 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* ======== 关键修复：长算式自动换行，彻底告别滚动条 ======== */
+        .equation {
+            font-size: 2.5rem;
+            font-weight: bold;
+            font-family: monospace;
+            background: #fef1cf;
+            padding: 24px 16px;
+            border-radius: 30px;
+            display: block;
+            width: 100%;
+            letter-spacing: 2px;
+            line-height: 1.4;
+            white-space: normal; /* 允许自动换行 */
+            word-break: break-word; /* 长算式安全换行 */
+            overflow-wrap: break-word;
+            word-spacing: 6px; /* 增加词语间距，方便阅读连加连减 */
+            min-height: 100px; /* 保持高度稳定 */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .input-area {
+            margin: 20px 0 10px;
+        }
+        .ans-input {
+            font-size: 2.4rem;
+            width: 140px;
+            text-align: center;
+            padding: 12px;
+            border: 4px solid #f3b33d;
+            border-radius: 56px;
+            background: #fff9ef;
+            font-weight: bold;
+            outline: none;
+        }
+        .submit-btn {
+            background: #ffae5a;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 12px 28px;
+            border-radius: 56px;
+            border: none;
+            margin-left: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #a45f2a;
+            transition: 0.05s linear;
+        }
+        .submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a45f2a;
+        }
+        .submit-btn.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            transform: none;
+        }
+        .feedback {
+            font-size: 1.4rem;
+            min-height: 65px;
+            margin: 12px 0;
+            font-weight: bold;
+        }
+        .feedback.correct { color: #2b7a2b; }
+        .feedback.wrong { color: #c7362b; }
+        .progress {
+            background: #e9e0c7;
+            border-radius: 30px;
+            padding: 8px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+        .virtual-kbd {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px auto 10px;
+            max-width: 320px;
+        }
+        .kbd {
+            background: #b9d8c1;
+            box-shadow: 0 3px 0 #6b8c6f;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 1.8rem;
+            border-radius: 36px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .kbd:active { transform: translateY(2px); box-shadow: 0 1px 0 #6b8c6f; }
+        .backspace { background: #f7aa76; grid-column: span 2; }
+        .operator-kbd {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px auto 10px;
+            max-width: 380px;
+        }
+        .op-kbd {
+            background: #ffd966;
+            box-shadow: 0 3px 0 #c49a2b;
+            text-align: center;
+            padding: 14px 0;
+            font-size: 1.6rem;
+            border-radius: 36px;
+            cursor: pointer;
+            font-weight: bold;
+            border: 2px solid #e0a800;
+        }
+        .op-kbd:active { transform: translateY(2px); box-shadow: 0 1px 0 #c49a2b; }
+        .op-kbd .op-num {
+            display: block;
+            font-size: 0.8rem;
+            color: #7b5e3a;
+            margin-bottom: 2px;
+        }
+        .op-kbd .op-sym {
+            font-size: 2rem;
+        }
+        .result-stats {
+            background: #fff2de;
+            border-radius: 36px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+
+        /* ================= 核心：类型徽章醒目样式 ================= */
+        .result-type-badge {
+            font-size: 1.5rem !important;
+            font-weight: 900 !important;
+            padding: 16px 20px !important;
+            border-radius: 24px !important;
+            text-align: center !important;
+            margin-bottom: 18px !important;
+            letter-spacing: 1px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 10px !important;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2) !important;
+            border: 3px solid rgba(0,0,0,0.1) !important;
+            color: #ffffff !important;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4) !important;
+            opacity: 1 !important;
+        }
+
+        .result-type-badge[data-type="basic"] {
+            background-color: #2e86de !important;
+            background: linear-gradient(135deg, #54a0ff, #2e86de) !important;
+        }
+        .result-type-badge[data-type="fillBlank"] {
+            background-color: #10ac84 !important;
+            background: linear-gradient(135deg, #1dd1a1, #10ac84) !important;
+        }
+        .result-type-badge[data-type="repeated"] {
+            background-color: #ff9f43 !important;
+            background: linear-gradient(135deg, #feca57, #ff9f43) !important;
+            color: #3b2a1f !important;
+            text-shadow: none !important;
+            border: 3px solid #e67e22 !important;
+        }
+        .result-type-badge[data-type="operator"] {
+            background-color: #c44569 !important;
+            background: linear-gradient(135deg, #ff6b81, #c44569) !important;
+        }
+
+        .score-big { font-size: 3.5rem; font-weight: bold; color: #e3861e; margin-bottom: 10px; }
+        .wrong-list {
+            background: #fff0df;
+            border-radius: 28px;
+            padding: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .wrong-item {
+            background: white;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 40px;
+            border-left: 8px solid #ff8c42;
+        }
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        button {
+            background: #ffae5a;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 48px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a45f2a;
+        }
+        .type-selector {
+            background: #fff;
+            border-radius: 40px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            text-align: left;
+            font-size: 1.1rem;
+        }
+        .type-selector select {
+            font-size: 1.1rem;
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 3px solid #ffcf4a;
+            background: #fff9ef;
+            width: 100%;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        footer {
+            background: #ffe1aa;
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 12px;
+            color: #7b5e3a;
+        }
+        
+        /* 适配小屏幕，保证连加连减在手机上也能完整换行显示 */
+        @media (max-width: 550px) {
+            .equation { 
+                font-size: 1.8rem; 
+                word-spacing: 2px; 
+                padding: 16px 8px;
+            }
+            .ans-input { width: 110px; font-size: 2rem; }
+            .submit-btn { font-size: 1.3rem; padding: 8px 18px; }
+            .op-kbd { font-size: 1.3rem; }
+            .op-kbd .op-sym { font-size: 1.6rem; }
+            .result-type-badge { font-size: 1.2rem !important; padding: 12px 14px !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="header">
+        <h1>🧮 1-6乘除练习 🦸‍♂️<br><span>二年级特训</span></h1>
+        <div class="timer-box">⏱️ 总用时 <span id="totalTime">0</span> 秒</div>
+    </div>
+    <div class="main">
+        <div id="startScreen" class="screen active">
+            <div class="question-card" style="background:#ffe3b5;">
+                <p style="font-size:1.3rem">📖 挑战规则</p>
+                <p style="text-align:left; margin:12px 20px; line-height:1.6;">
+                    每组10题，题目不重复。<br>
+                    所有题目只使用1-6的乘法口诀。<br>
+                    4、5、6的乘除法出现频率更高，并包含易错题。<br>
+                    每题都有计时，错题需要重做并重新计时。
+                </p>
+                <div class="type-selector">
+                    <label><strong>📌 选择题目类型：</strong></label>
+                    <select id="questionTypeSelect">
+                        <option value="basic">类型一：基础1-6乘除法</option>
+                        <option value="fillBlank">类型二：挖空式（填乘数/除数/被除数）</option>
+                        <option value="repeated">类型三：乘加、乘减、连加、连减</option>
+                        <option value="operator">类型四：填运算符号（+ - × ÷）</option>
+                    </select>
+                </div>
+                <button id="startBtn">🚀 开始挑战 🚀</button>
+            </div>
+        </div>
+
+        <div id="gameScreen" class="screen">
+            <div class="question-card">
+                <div class="equation" id="equationDisplay">??</div>
+                <div class="input-area" id="numberInputArea">
+                    <input type="number" id="answerInput" class="ans-input" placeholder="?" autocomplete="off">
+                    <button id="submitAnswer" class="submit-btn">✓ 提交</button>
+                </div>
+                <div class="input-area" id="operatorInputArea" style="display:none;">
+                    <div id="operatorHint" style="font-size:1rem; color:#7b5e3a; margin-bottom:8px;">点击或按数字键选择运算符号：1(+)、2(-)、3(×)、4(÷)</div>
+                    <input type="text" id="operatorAnswerInput" class="ans-input" placeholder="?" autocomplete="off" readonly style="caret-color: transparent;">
+                    <button id="submitOperatorAnswer" class="submit-btn">✓ 提交</button>
+                </div>
+                <div class="feedback" id="feedbackMsg"></div>
+                <div class="progress" id="progressText">第1 / 10题</div>
+            </div>
+            <div class="virtual-kbd" id="numberKbd">
+                <div class="kbd" data-num="1">1</div><div class="kbd" data-num="2">2</div><div class="kbd" data-num="3">3</div><div class="kbd" data-num="4">4</div>
+                <div class="kbd" data-num="5">5</div><div class="kbd" data-num="6">6</div><div class="kbd" data-num="7">7</div><div class="kbd" data-num="8">8</div>
+                <div class="kbd" data-num="9">9</div><div class="kbd" data-num="0">0</div><div class="kbd backspace" id="delKey">⌫ 删除</div><div class="kbd" id="virtualSubmit">✓ 提交</div>
+            </div>
+            <div class="operator-kbd" id="operatorKbd" style="display:none;">
+                <div class="op-kbd" data-op="+"><span class="op-num">1</span><span class="op-sym">+</span></div>
+                <div class="op-kbd" data-op="-"><span class="op-num">2</span><span class="op-sym">−</span></div>
+                <div class="op-kbd" data-op="×"><span class="op-num">3</span><span class="op-sym">×</span></div>
+                <div class="op-kbd" data-op="÷"><span class="op-num">4</span><span class="op-sym">÷</span></div>
+            </div>
+            <div style="font-size:0.8rem; text-align:center; color:#a0662c;" id="hintText">按 Enter 或点“提交”</div>
+        </div>
+
+        <div id="resultScreen" class="screen">
+            <div class="result-stats">
+                <div class="result-type-badge" id="resultTypeBadge" data-type="basic">🟦 类型一：基础1-6乘除法</div>
+                <div class="score-big" id="scoreSpan">0/10</div>
+                <div id="encourageMsg" style="font-size:1.4rem; margin:6px 0;"></div>
+                <p>⏱️ 总耗时: <span id="finalTime">0</span> 秒</p>
+                <p>📊 平均每题: <span id="avgTime">0</span> 秒</p>
+                <div>📅 日期: <span id="testDate"></span></div>
+            </div>
+            <div id="wrongList" class="wrong-list"><strong>📝 错题本</strong><br></div>
+            <div class="btn-group">
+                <button id="restartBtn">🔄 再玩一次</button>
+                <button id="redoWrongBtn">✏️ 练习错题</button>
+            </div>
+        </div>
+
+        <div id="reviewScreen" class="screen">
+            <div class="question-card">
+                <div class="equation" id="reviewEquation">??</div>
+                <div class="input-area" id="reviewNumberInputArea">
+                    <input type="number" id="reviewInput" class="ans-input" placeholder="?">
+                    <button id="reviewSubmit" class="submit-btn">✓ 提交</button>
+                </div>
+                <div class="input-area" id="reviewOperatorInputArea" style="display:none;">
+                    <div style="font-size:1rem; color:#7b5e3a; margin-bottom:8px;">点击或按数字键选择运算符号</div>
+                    <input type="text" id="reviewOperatorInput" class="ans-input" placeholder="?" readonly>
+                    <button id="reviewOperatorSubmit" class="submit-btn">✓ 提交</button>
+                </div>
+                <div class="feedback" id="reviewFeedback"></div>
+                <div class="progress" id="reviewProgress">第1 / ?题</div>
+            </div>
+            <div class="virtual-kbd" id="reviewNumberKbd">
+                <div class="kbd" data-num="1">1</div><div class="kbd" data-num="2">2</div><div class="kbd" data-num="3">3</div><div class="kbd" data-num="4">4</div>
+                <div class="kbd" data-num="5">5</div><div class="kbd" data-num="6">6</div><div class="kbd" data-num="7">7</div><div class="kbd" data-num="8">8</div>
+                <div class="kbd" data-num="9">9</div><div class="kbd" data-num="0">0</div><div class="kbd backspace" id="reviewDel">⌫ 删除</div><div class="kbd" id="reviewVirtualSubmit">✓ 提交</div>
+            </div>
+            <div class="operator-kbd" id="reviewOperatorKbd" style="display:none;">
+                <div class="op-kbd" data-op="+"><span class="op-num">1</span><span class="op-sym">+</span></div>
+                <div class="op-kbd" data-op="-"><span class="op-num">2</span><span class="op-sym">−</span></div>
+                <div class="op-kbd" data-op="×"><span class="op-num">3</span><span class="op-sym">×</span></div>
+                <div class="op-kbd" data-op="÷"><span class="op-num">4</span><span class="op-sym">÷</span></div>
+            </div>
+            <button id="backToResult" style="background:#b0a088; margin-top:6px;">← 返回成绩</button>
+        </div>
+    </div>
+    <footer>💡 所有题目只用1-6的乘法口诀，4、5、6高频出现，易错题重点练习！</footer>
+</div>
+
+<script>
+    (function() {
+        const rand = (min, max) => {
+            if (isNaN(min) || isNaN(max) || min > max) return min;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        };
+
+        const TYPE_INFO = {
+            basic: { name: '类型一：基础1-6乘除法', icon: '🟦' },
+            fillBlank: { name: '类型二：挖空式（填乘数/除数/被除数）', icon: '🧩' },
+            repeated: { name: '类型三：乘加、乘减、连加、连减', icon: '🧮' },
+            operator: { name: '类型四：填运算符号（+ - × ÷）', icon: '✍️' }
+        };
+
+        let quiz = [];
+        let curIndex = 0;
+        let correct = 0;
+        let wrongs = [];
+        let startTime = 0, timer = null, elapsed = 0;
+        let isSubmitting = false;
+        let currentType = 'basic';
+
+        const easyMistakeTables = [
+            { a: 4, b: 6, type: 'mul' }, { a: 6, b: 4, type: 'mul' },
+            { a: 5, b: 6, type: 'mul' }, { a: 6, b: 5, type: 'mul' },
+            { a: 6, b: 6, type: 'mul' },
+            { a: 4, b: 4, type: 'mul' }, { a: 5, b: 5, type: 'mul' },
+            { a: 3, b: 6, type: 'mul' }, { a: 6, b: 3, type: 'mul' },
+            { a: 24, b: 4, type: 'div' }, { a: 24, b: 6, type: 'div' },
+            { a: 30, b: 5, type: 'div' }, { a: 30, b: 6, type: 'div' },
+            { a: 36, b: 6, type: 'div' }, { a: 20, b: 4, type: 'div' },
+            { a: 20, b: 5, type: 'div' }, { a: 18, b: 6, type: 'div' },
+            { a: 25, b: 5, type: 'div' }, { a: 16, b: 4, type: 'div' }
+        ];
+
+        function weightedPick() {
+            const r = Math.random();
+            if (r < 0.45) return { type: 'easy' };
+            if (r < 0.75) return { type: 'high', num: rand(4, 6) };
+            return { type: 'normal' };
+        }
+
+        function genBasicMul() {
+            let a, b;
+            const pick = weightedPick();
+            if (pick.type === 'easy') {
+                const e = easyMistakeTables.filter(x => x.type === 'mul');
+                const item = e[rand(0, e.length - 1)];
+                a = item.a; b = item.b;
+            } else if (pick.type === 'high') {
+                a = pick.num;
+                b = rand(1, 6);
+            } else {
+                a = rand(1, 3);
+                b = rand(1, 6);
+            }
+            return { text: `${a} × ${b} = ?`, answer: a * b, type: 'mul', a, b };
+        }
+
+        function genBasicDiv() {
+            let dividend, divisor, quotient;
+            const pick = weightedPick();
+            if (pick.type === 'easy') {
+                const e = easyMistakeTables.filter(x => x.type === 'div');
+                const item = e[rand(0, e.length - 1)];
+                dividend = item.a; divisor = item.b; quotient = dividend / divisor;
+            } else if (pick.type === 'high') {
+                divisor = pick.num;
+                quotient = rand(1, 6);
+                dividend = divisor * quotient;
+            } else {
+                divisor = rand(1, 3);
+                quotient = rand(1, 6);
+                dividend = divisor * quotient;
+            }
+            return { text: `${dividend} ÷ ${divisor} = ?`, answer: quotient, type: 'div', dividend, divisor };
+        }
+
+        function genFillBlankMul(blankType) {
+            let a, b, prod;
+            const pick = weightedPick();
+            if (pick.type === 'easy') {
+                const e = easyMistakeTables.filter(x => x.type === 'mul');
+                const item = e[rand(0, e.length - 1)];
+                a = item.a; b = item.b; prod = a * b;
+            } else if (pick.type === 'high') {
+                a = pick.num; b = rand(1, 6); prod = a * b;
+            } else {
+                a = rand(1, 3); b = rand(1, 6); prod = a * b;
+            }
+            if (blankType === 'left') {
+                return { text: `□ × ${b} = ${prod}`, answer: a, type: 'fillMulA', full: `${a} × ${b} = ${prod}` };
+            } else {
+                return { text: `${a} × □ = ${prod}`, answer: b, type: 'fillMulB', full: `${a} × ${b} = ${prod}` };
+            }
+        }
+
+        function genSpecialFillDiv() {
+            const type = rand(1, 3);
+            let dividend, divisor, quotient, answer, text;
+            if (type === 1) {
+                divisor = rand(2, 6);
+                quotient = divisor;
+                dividend = divisor * quotient;
+                text = `□ ÷ ${divisor} = ${quotient}`;
+                answer = dividend;
+            } else if (type === 2) {
+                divisor = rand(2, 6);
+                quotient = 1;
+                dividend = divisor * quotient;
+                text = `□ ÷ ${divisor} = 1`;
+                answer = dividend;
+            } else {
+                divisor = 1;
+                quotient = rand(2, 6);
+                dividend = divisor * quotient;
+                text = `□ ÷ 1 = ${quotient}`;
+                answer = dividend;
+            }
+            return { text, answer, type: 'fillDivDividend', full: `${dividend} ÷ ${divisor} = ${quotient}` };
+        }
+
+        function genFillBlankDiv(blankType) {
+            let dividend, divisor, quotient;
+            const pick = weightedPick();
+            if (pick.type === 'easy') {
+                const e = easyMistakeTables.filter(x => x.type === 'div');
+                const item = e[rand(0, e.length - 1)];
+                dividend = item.a; divisor = item.b; quotient = dividend / divisor;
+            } else if (pick.type === 'high') {
+                divisor = pick.num; quotient = rand(1, 6); dividend = divisor * quotient;
+            } else {
+                divisor = rand(1, 3); quotient = rand(1, 6); dividend = divisor * quotient;
+            }
+            if (blankType === 'left') {
+                return { text: `□ ÷ ${divisor} = ${quotient}`, answer: dividend, type: 'fillDivDividend', full: `${dividend} ÷ ${divisor} = ${quotient}` };
+            } else {
+                return { text: `${dividend} ÷ □ = ${quotient}`, answer: divisor, type: 'fillDivDivisor', full: `${dividend} ÷ ${divisor} = ${quotient}` };
+            }
+        }
+
+        function genRepeatedAdd() {
+            const base = rand(2, 6);
+            const times = rand(2, 4);
+            let sum = 0;
+            for (let i = 0; i < times; i++) sum += base;
+            // 用空格 + " + " + 空格，保证换行美观
+            return { text: `${Array(times).fill(base).join(' + ')} = ?`, answer: sum, type: 'repeatedAdd', full: `${base} × ${times} = ${sum}` };
+        }
+
+        function genRepeatedSub() {
+            const divisor = rand(2, 6);
+            const quotient = rand(2, 4);
+            const remainder = rand(1, divisor - 1);
+            const total = divisor * quotient + remainder;
+            let parts = [];
+            for (let i = 0; i < quotient; i++) parts.push(divisor);
+            const answer = total - divisor * quotient;
+            return { text: `${total} - ${parts.join(' - ')} = ?`, answer: answer, type: 'repeatedSub', full: `${total} - ${divisor}×${quotient} = ${answer}` };
+        }
+
+        function genMulAdd() {
+            const a = rand(2, 6);
+            const b = rand(2, 6);
+            const extra = rand(1, 6);
+            const sum = a * b + extra;
+            return { text: `${a} × ${b} + ${extra} = ?`, answer: sum, type: 'mulAdd', full: `${a} × ${b} + ${extra} = ${sum}` };
+        }
+
+        function genMulSub() {
+            const a = rand(2, 6);
+            const b = rand(2, 6);
+            let sub = rand(1, a * b - 1);
+            const ans = a * b - sub;
+            return { text: `${a} × ${b} - ${sub} = ?`, answer: ans, type: 'mulSub', full: `${a} × ${b} - ${sub} = ${ans}` };
+        }
+
+        function genOperatorWithAnswer(targetOp) {
+            const a = rand(1, 6);
+            const b = rand(1, 6);
+            let displayResult, text;
+            if (targetOp === '+') {
+                displayResult = a + b;
+                text = `${a} □ ${b} = ${displayResult}`;
+            } else if (targetOp === '-') {
+                if (a < b) return genOperatorWithAnswer('-');
+                displayResult = a - b;
+                text = `${a} □ ${b} = ${displayResult}`;
+            } else if (targetOp === '×') {
+                displayResult = a * b;
+                text = `${a} □ ${b} = ${displayResult}`;
+            } else {
+                if (b === 0 || a % b !== 0) return genOperatorWithAnswer('÷');
+                displayResult = a / b;
+                text = `${a} □ ${b} = ${displayResult}`;
+            }
+            const answers = [];
+            if (a + b === displayResult) answers.push('+');
+            if (a - b === displayResult) answers.push('-');
+            if (a * b === displayResult) answers.push('×');
+            if (b !== 0 && a % b === 0 && a / b === displayResult) answers.push('÷');
+            return {
+                text: text,
+                answer: answers[0],
+                answers: answers,
+                type: 'operator',
+                full: `${a} ${answers[0]} ${b} = ${displayResult}`,
+                targetOp: targetOp
+            };
+        }
+
+        function buildQuiz(type) {
+            let questions = [];
+            const used = new Set();
+            const addUnique = (q) => {
+                if (!q) return false;
+                if (used.has(q.text)) return false;
+                used.add(q.text);
+                questions.push(q);
+                return true;
+            };
+
+            if (type === 'basic') {
+                let mulCount = 0, divCount = 0;
+                while (mulCount < 5) { if (addUnique(genBasicMul())) mulCount++; }
+                while (divCount < 5) { if (addUnique(genBasicDiv())) divCount++; }
+            } else if (type === 'fillBlank') {
+                let specialAdded = false;
+                while (!specialAdded) {
+                    const q = genSpecialFillDiv();
+                    if (addUnique(q)) specialAdded = true;
+                }
+                let mulLeft = 0, mulRight = 0;
+                while (mulLeft < 2) { if (addUnique(genFillBlankMul('left'))) mulLeft++; }
+                while (mulRight < 3) { if (addUnique(genFillBlankMul('right'))) mulRight++; }
+                let divLeft = 1; 
+                let divRight = 0;
+                while (divLeft < 2) { if (addUnique(genFillBlankDiv('left'))) divLeft++; }
+                while (divRight < 3) { if (addUnique(genFillBlankDiv('right'))) divRight++; }
+                while (questions.length < 10) {
+                    if (addUnique(genFillBlankMul('right'))) continue;
+                    if (addUnique(genFillBlankDiv('right'))) continue;
+                }
+            } else if (type === 'repeated') {
+                let mulAddCount = 0;
+                while (mulAddCount < 2) { if (addUnique(genMulAdd())) mulAddCount++; }
+                let mulSubCount = 0;
+                while (mulSubCount < 3) { if (addUnique(genMulSub())) mulSubCount++; }
+                let repeatAddCount = 0;
+                while (repeatAddCount < 2) { if (addUnique(genRepeatedAdd())) repeatAddCount++; }
+                let repeatSubCount = 0;
+                while (repeatSubCount < 3) { if (addUnique(genRepeatedSub())) repeatSubCount++; }
+            } else if (type === 'operator') {
+                const targetPlan = [
+                    { op: '+', count: 2 },
+                    { op: '-', count: 2 },
+                    { op: '×', count: 3 },
+                    { op: '÷', count: 3 }
+                ];
+                for (const plan of targetPlan) {
+                    let made = 0;
+                    let retry = 0;
+                    while (made < plan.count && retry < 200) {
+                        const q = genOperatorWithAnswer(plan.op);
+                        if (q.answers.includes(plan.op)) {
+                            if (addUnique(q)) made++;
+                            else retry++;
+                        } else {
+                            retry++;
+                        }
+                    }
+                }
+                for (let i = questions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [questions[i], questions[j]] = [questions[j], questions[i]];
+                }
+                return questions;
+            }
+
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+            return questions;
+        }
+
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const reviewScreen = document.getElementById('reviewScreen');
+        const equationDisplay = document.getElementById('equationDisplay');
+        const answerInput = document.getElementById('answerInput');
+        const feedbackSpan = document.getElementById('feedbackMsg');
+        const progressSpan = document.getElementById('progressText');
+        const totalTimeSpan = document.getElementById('totalTime');
+        const scoreSpan = document.getElementById('scoreSpan');
+        const encourageMsg = document.getElementById('encourageMsg');
+        const finalTimeSpan = document.getElementById('finalTime');
+        const avgTimeSpan = document.getElementById('avgTime');
+        const wrongListDiv = document.getElementById('wrongList');
+        const testDateSpan = document.getElementById('testDate');
+        const resultTypeBadge = document.getElementById('resultTypeBadge');
+        const reviewEquation = document.getElementById('reviewEquation');
+        const reviewInput = document.getElementById('reviewInput');
+        const reviewFeedbackSpan = document.getElementById('reviewFeedback');
+        const reviewProgressSpan = document.getElementById('reviewProgress');
+
+        const numberInputArea = document.getElementById('numberInputArea');
+        const operatorInputArea = document.getElementById('operatorInputArea');
+        const numberKbd = document.getElementById('numberKbd');
+        const operatorKbd = document.getElementById('operatorKbd');
+        const operatorAnswerInput = document.getElementById('operatorAnswerInput');
+        const reviewNumberInputArea = document.getElementById('reviewNumberInputArea');
+        const reviewOperatorInputArea = document.getElementById('reviewOperatorInputArea');
+        const reviewNumberKbd = document.getElementById('reviewNumberKbd');
+        const reviewOperatorKbd = document.getElementById('reviewOperatorKbd');
+        const reviewOperatorInput = document.getElementById('reviewOperatorInput');
+        const hintText = document.getElementById('hintText');
+
+        let reviewWrongs = [];
+        let reviewIdx = 0;
+        let reviewCorrectCount = 0;
+        let isReviewSubmitting = false;
+
+        function setMainSubmitEnabled(enabled) {
+            const btn = document.getElementById('submitAnswer');
+            if (btn) { if (enabled) btn.classList.remove('disabled'); else btn.classList.add('disabled'); }
+            const btn2 = document.getElementById('submitOperatorAnswer');
+            if (btn2) { if (enabled) btn2.classList.remove('disabled'); else btn2.classList.add('disabled'); }
+            const virtBtn = document.getElementById('virtualSubmit');
+            if (virtBtn) { if (enabled) { virtBtn.style.pointerEvents = 'auto'; virtBtn.style.opacity = '1'; } else { virtBtn.style.pointerEvents = 'none'; virtBtn.style.opacity = '0.6'; } }
+        }
+
+        function setReviewSubmitEnabled(enabled) {
+            const btn = document.getElementById('reviewSubmit');
+            if (btn) { if (enabled) btn.classList.remove('disabled'); else btn.classList.add('disabled'); }
+            const btn2 = document.getElementById('reviewOperatorSubmit');
+            if (btn2) { if (enabled) btn2.classList.remove('disabled'); else btn2.classList.add('disabled'); }
+            const virtBtn = document.getElementById('reviewVirtualSubmit');
+            if (virtBtn) { if (enabled) { virtBtn.style.pointerEvents = 'auto'; virtBtn.style.opacity = '1'; } else { virtBtn.style.pointerEvents = 'none'; virtBtn.style.opacity = '0.6'; } }
+        }
+
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            startTime = Date.now();
+            timer = setInterval(() => {
+                elapsed = Math.floor((Date.now() - startTime) / 1000);
+                totalTimeSpan.innerText = elapsed;
+            }, 200);
+        }
+        function stopTimer() {
+            if (timer) clearInterval(timer);
+            timer = null;
+            return elapsed;
+        }
+
+        function switchInputMode(isOperatorType) {
+            if (isOperatorType) {
+                numberInputArea.style.display = 'none';
+                operatorInputArea.style.display = 'block';
+                numberKbd.style.display = 'none';
+                operatorKbd.style.display = 'grid';
+                hintText.innerText = '点击运算符号按钮，或按数字键 1(+)、2(-)、3(×)、4(÷)';
+            } else {
+                numberInputArea.style.display = 'block';
+                operatorInputArea.style.display = 'none';
+                numberKbd.style.display = 'grid';
+                operatorKbd.style.display = 'none';
+                hintText.innerText = '按 Enter 或点“提交”';
+            }
+        }
+
+        function refreshUI() {
+            if (curIndex >= quiz.length) return;
+            const q = quiz[curIndex];
+            equationDisplay.innerText = q.text;
+            answerInput.value = '';
+            operatorAnswerInput.value = '';
+            feedbackSpan.innerText = '';
+            feedbackSpan.className = 'feedback';
+            progressSpan.innerText = `第${curIndex+1} / 10题`;
+            isSubmitting = false;
+            setMainSubmitEnabled(true);
+            if (q.type === 'operator') {
+                switchInputMode(true);
+            } else {
+                switchInputMode(false);
+            }
+        }
+
+        function submitMain() {
+            if (isSubmitting) return;
+            if (curIndex >= quiz.length) return;
+            const q = quiz[curIndex];
+            let user = '';
+            if (q.type === 'operator') {
+                user = operatorAnswerInput.value.trim();
+            } else {
+                user = answerInput.value.trim();
+            }
+            if (user === '') {
+                feedbackSpan.innerText = q.type === 'operator' ? '🤔 请选择运算符号再提交～' : '🤔 请输入数字再提交～';
+                feedbackSpan.className = 'feedback wrong';
+                return;
+            }
+            isSubmitting = true;
+            setMainSubmitEnabled(false);
+
+            let isCorrect = false;
+            if (q.type === 'operator') {
+                isCorrect = q.answers.includes(user);
+            } else {
+                const num = parseInt(user);
+                isCorrect = (!isNaN(num) && num === q.answer);
+            }
+
+            if (isCorrect) {
+                feedbackSpan.innerText = '✅ 正确！真棒！';
+                feedbackSpan.className = 'feedback correct';
+                correct++;
+            } else {
+                const correctDisplay = q.type === 'operator' ? q.answers.join(' 或 ') : q.answer;
+                feedbackSpan.innerText = `❌ 正确答案是 ${correctDisplay}，再努力！`;
+                feedbackSpan.className = 'feedback wrong';
+                wrongs.push({ text: q.text, correctAnswer: correctDisplay, type: q.type, full: q.full, answers: q.answers });
+            }
+            setTimeout(() => {
+                curIndex++;
+                if (curIndex < quiz.length) refreshUI();
+                else endGame();
+            }, 800);
+        }
+
+        function endGame() {
+            stopTimer();
+            const finalSec = elapsed;
+            resultScreen.classList.add('active');
+            gameScreen.classList.remove('active');
+            const info = TYPE_INFO[currentType] || { name: '', icon: '' };
+            resultTypeBadge.innerText = `${info.icon} ${info.name}`;
+            resultTypeBadge.setAttribute('data-type', currentType);
+            scoreSpan.innerText = `${correct}/${quiz.length}`;
+            finalTimeSpan.innerText = finalSec;
+            const avg = (finalSec / quiz.length).toFixed(1);
+            avgTimeSpan.innerText = avg;
+            const today = new Date();
+            testDateSpan.innerText = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+            let msg = '';
+            if (correct === 10) msg = '🏆 完美通关！乘除小英雄！';
+            else if (correct >= 8) msg = '🎉 非常棒，再细致一点就全对啦！';
+            else if (correct >= 6) msg = '🌟 不错，把错题练一练更厉害！';
+            else msg = '💪 别灰心，错题就是最好的练习！';
+            encourageMsg.innerText = msg;
+
+            wrongListDiv.innerHTML = '<strong>📝 错题本</strong><br>';
+            if (wrongs.length === 0) wrongListDiv.innerHTML += '<div>✨ 全对！太优秀啦 ✨</div>';
+            else {
+                wrongs.forEach(w => {
+                    wrongListDiv.innerHTML += `<div class="wrong-item">${w.text}  ❌ 你的答案: ?  ✅ 正确答案: ${w.correctAnswer}</div>`;
+                });
+            }
+        }
+
+        function startReview() {
+            if (wrongs.length === 0) { alert('🎉 没有错题，你真棒！'); return; }
+            reviewWrongs = [...wrongs];
+            reviewIdx = 0;
+            reviewCorrectCount = 0;
+            resultScreen.classList.remove('active');
+            reviewScreen.classList.add('active');
+            showReviewItem();
+        }
+
+        function showReviewItem() {
+            if (reviewIdx >= reviewWrongs.length) {
+                alert(`错题练习完成！本次正确 ${reviewCorrectCount}/${reviewWrongs.length} 题。`);
+                reviewScreen.classList.remove('active');
+                resultScreen.classList.add('active');
+                return;
+            }
+            const item = reviewWrongs[reviewIdx];
+            reviewEquation.innerText = item.text;
+            reviewInput.value = '';
+            reviewOperatorInput.value = '';
+            reviewFeedbackSpan.innerText = '';
+            reviewProgressSpan.innerText = `第${reviewIdx+1} / ${reviewWrongs.length}题 (错题重做)`;
+            isReviewSubmitting = false;
+            setReviewSubmitEnabled(true);
+            if (item.type === 'operator') {
+                reviewNumberInputArea.style.display = 'none';
+                reviewOperatorInputArea.style.display = 'block';
+                reviewNumberKbd.style.display = 'none';
+                reviewOperatorKbd.style.display = 'grid';
+            } else {
+                reviewNumberInputArea.style.display = 'block';
+                reviewOperatorInputArea.style.display = 'none';
+                reviewNumberKbd.style.display = 'grid';
+                reviewOperatorKbd.style.display = 'none';
+            }
+        }
+
+        function submitReview() {
+            if (isReviewSubmitting) return;
+            if (reviewIdx >= reviewWrongs.length) return;
+            const cur = reviewWrongs[reviewIdx];
+            let user = '';
+            if (cur.type === 'operator') {
+                user = reviewOperatorInput.value.trim();
+            } else {
+                user = reviewInput.value.trim();
+            }
+            if (user === '') {
+                reviewFeedbackSpan.innerText = cur.type === 'operator' ? '请选择运算符号' : '请输入数字';
+                reviewFeedbackSpan.className = 'feedback wrong';
+                return;
+            }
+            isReviewSubmitting = true;
+            setReviewSubmitEnabled(false);
+            let isCorrect = false;
+            if (cur.type === 'operator') {
+                const answersArr = cur.answers || [cur.correctAnswer];
+                isCorrect = answersArr.includes(user);
+            } else {
+                const num = parseInt(user);
+                isCorrect = (!isNaN(num) && num === cur.correctAnswer);
+            }
+
+            if (isCorrect) {
+                reviewFeedbackSpan.innerText = '✓ 正确！继续前进！';
+                reviewFeedbackSpan.className = 'feedback correct';
+                reviewCorrectCount++;
+                setTimeout(() => { reviewIdx++; showReviewItem(); }, 600);
+            } else {
+                reviewFeedbackSpan.innerText = `✗ 正确答案是 ${cur.correctAnswer}，再试一次！`;
+                reviewFeedbackSpan.className = 'feedback wrong';
+                setTimeout(() => {
+                    reviewInput.value = '';
+                    reviewOperatorInput.value = '';
+                    reviewFeedbackSpan.innerText = '';
+                    isReviewSubmitting = false;
+                    setReviewSubmitEnabled(true);
+                }, 1200);
+            }
+        }
+
+        function newGame() {
+            if (timer) clearInterval(timer);
+            currentType = document.getElementById('questionTypeSelect').value;
+            quiz = buildQuiz(currentType);
+            curIndex = 0;
+            correct = 0;
+            wrongs = [];
+            elapsed = 0;
+            totalTimeSpan.innerText = '0';
+            isSubmitting = false;
+            refreshUI();
+            startTimer();
+            startScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            resultScreen.classList.remove('active');
+            reviewScreen.classList.remove('active');
+        }
+
+        document.getElementById('startBtn').onclick = newGame;
+        document.getElementById('restartBtn').onclick = newGame;
+        document.getElementById('redoWrongBtn').onclick = startReview;
+        document.getElementById('backToResult').onclick = () => {
+            reviewScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+        };
+        document.getElementById('submitAnswer').onclick = submitMain;
+        document.getElementById('submitOperatorAnswer').onclick = submitMain;
+        document.getElementById('reviewSubmit').onclick = submitReview;
+        document.getElementById('reviewOperatorSubmit').onclick = submitReview;
+
+        document.addEventListener('keydown', (e) => {
+            const isGameActive = gameScreen.classList.contains('active');
+            const isReviewActive = reviewScreen.classList.contains('active');
+            if (!isGameActive && !isReviewActive) return;
+
+            const curQ = isGameActive ? quiz[curIndex] : (isReviewActive ? reviewWrongs[reviewIdx] : null);
+            const isOperatorQ = curQ && curQ.type === 'operator';
+
+            if (isOperatorQ) {
+                if (e.key === '1') { e.preventDefault(); if (isGameActive) operatorAnswerInput.value = '+'; else reviewOperatorInput.value = '+'; return; }
+                if (e.key === '2') { e.preventDefault(); if (isGameActive) operatorAnswerInput.value = '-'; else reviewOperatorInput.value = '-'; return; }
+                if (e.key === '3') { e.preventDefault(); if (isGameActive) operatorAnswerInput.value = '×'; else reviewOperatorInput.value = '×'; return; }
+                if (e.key === '4') { e.preventDefault(); if (isGameActive) operatorAnswerInput.value = '÷'; else reviewOperatorInput.value = '÷'; return; }
+                if (e.key === 'Backspace') { e.preventDefault(); if (isGameActive) operatorAnswerInput.value = ''; else reviewOperatorInput.value = ''; return; }
+                if (e.key === 'Enter') { e.preventDefault(); if (isGameActive) submitMain(); else submitReview(); return; }
+            } else {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (isGameActive) submitMain();
+                    else if (isReviewActive) submitReview();
+                }
+            }
+        });
+
+        function bindVirtualNum(inputField, submitCallback, delId, virtSubmitId) {
+            const keys = document.querySelectorAll('.kbd[data-num]');
+            keys.forEach(k => {
+                k.onclick = () => {
+                    if (inputField) inputField.value += k.getAttribute('data-num');
+                    inputField.focus();
+                };
+            });
+            document.getElementById(delId).onclick = () => {
+                if (inputField) inputField.value = inputField.value.slice(0, -1);
+                inputField.focus();
+            };
+            document.getElementById(virtSubmitId).onclick = submitCallback;
+        }
+        bindVirtualNum(answerInput, submitMain, 'delKey', 'virtualSubmit');
+        bindVirtualNum(reviewInput, submitReview, 'reviewDel', 'reviewVirtualSubmit');
+
+        function bindOperatorKbd(inputField, opKbdContainerId) {
+            const container = document.getElementById(opKbdContainerId);
+            const btns = container.querySelectorAll('.op-kbd');
+            btns.forEach(btn => {
+                btn.onclick = () => {
+                    const op = btn.getAttribute('data-op');
+                    if (inputField) inputField.value = op;
+                    inputField.focus();
+                };
+            });
+        }
+        bindOperatorKbd(operatorAnswerInput, 'operatorKbd');
+        bindOperatorKbd(reviewOperatorInput, 'reviewOperatorKbd');
+    })();
+</script>
+</body>
+</html>
