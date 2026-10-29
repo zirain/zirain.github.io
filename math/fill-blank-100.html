@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>【优化版】100以内填空小英雄 | 一年级数学特训</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(145deg, #2b6e9e 0%, #1b4f6e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 16px;
+            margin: 0;
+        }
+        .game-container {
+            max-width: 650px;
+            width: 100%;
+            background: #fef9e6;
+            border-radius: 64px 64px 48px 48px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: #ffcf4a;
+            padding: 18px 16px 10px;
+            text-align: center;
+            color: #3b2a1f;
+        }
+        .header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .timer-box {
+            background: #2c3e2b;
+            color: #f3ffb6;
+            display: inline-flex;
+            gap: 20px;
+            padding: 6px 24px;
+            border-radius: 60px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .main {
+            padding: 20px 18px 28px;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .question-card {
+            background: white;
+            border-radius: 48px;
+            box-shadow: 0 8px 0 #cb8b2e;
+            padding: 30px 16px 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .equation {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: monospace;
+            background: #fef1cf;
+            padding: 20px 12px;
+            border-radius: 70px;
+            display: inline-block;
+            width: 100%;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .input-area {
+            margin: 20px 0 10px;
+        }
+        .ans-input {
+            font-size: 2.4rem;
+            width: 140px;
+            text-align: center;
+            padding: 12px;
+            border: 4px solid #f3b33d;
+            border-radius: 56px;
+            background: #fff9ef;
+            font-weight: bold;
+            outline: none;
+        }
+        .submit-btn {
+            background: #ffae5a;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 12px 28px;
+            border-radius: 56px;
+            border: none;
+            margin-left: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #a45f2a;
+            transition: 0.05s linear;
+        }
+        .submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a45f2a;
+        }
+        .submit-btn.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            transform: none;
+        }
+        .feedback {
+            font-size: 1.4rem;
+            min-height: 65px;
+            margin: 12px 0;
+            font-weight: bold;
+        }
+        .feedback.correct { color: #2b7a2b; }
+        .feedback.wrong { color: #c7362b; }
+        .progress {
+            background: #e9e0c7;
+            border-radius: 30px;
+            padding: 8px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+        .virtual-kbd {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px auto 10px;
+            max-width: 320px;
+        }
+        .kbd {
+            background: #b9d8c1;
+            box-shadow: 0 3px 0 #6b8c6f;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 1.8rem;
+            border-radius: 36px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .kbd:active { transform: translateY(2px); box-shadow: 0 1px 0 #6b8c6f; }
+        .backspace { background: #f7aa76; grid-column: span 2; }
+        .result-stats {
+            background: #fff2de;
+            border-radius: 36px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        .score-big { font-size: 3rem; font-weight: bold; color: #e3861e; }
+        .wrong-list {
+            background: #fff0df;
+            border-radius: 28px;
+            padding: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .wrong-item {
+            background: white;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 40px;
+            border-left: 8px solid #ff8c42;
+        }
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        button {
+            background: #ffae5a;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 48px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a45f2a;
+        }
+        footer {
+            background: #ffe1aa;
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 12px;
+            color: #7b5e3a;
+        }
+        @media (max-width: 550px) {
+            .equation { font-size: 2rem; white-space: normal; word-break: keep-all; }
+            .ans-input { width: 110px; font-size: 2rem; }
+            .submit-btn { font-size: 1.3rem; padding: 8px 18px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="header">
+        <h1>🧮 【优化版】100以内填空小英雄 🦸‍♂️<br><span>填空挑战</span></h1>
+        <div class="timer-box">⏱️ 总用时 <span id="totalTime">0</span> 秒</div>
+    </div>
+    <div class="main">
+        <div id="startScreen" class="screen active">
+            <div class="question-card" style="background:#ffe3b5;">
+                <p style="font-size:1.3rem">📖 挑战规则</p>
+                <ul style="text-align:left; margin:12px 20px; line-height:1.5">
+                    <li>✨ 2道 两位数加两位数(进位) → 填空十位/个位</li>
+                    <li>✨ 1道 两位数加两位数(不进位) → 填空十位或个位</li>
+                    <li>✨ 1道 一位数加两位数(进位) → 填空十位或个位</li>
+                    <li>✨ 1道 一位数加两位数(不进位) → 填空十位或个位</li>
+                    <li>✨ 2道 两位数减两位数(退位) → 填空十位/个位</li>
+                    <li>✨ 1道 两位数减两位数(不退位) → 填空十位</li>
+                    <li>✨ 2道 两位数减一位数(退位) → 填空十位或个位</li>
+                    <li>🎁 特别加入1道“个位差1”的减法，帮你巩固！</li>
+                </ul>
+                <button id="startBtn">🚀 开始挑战 🚀</button>
+            </div>
+        </div>
+
+        <div id="gameScreen" class="screen">
+            <div class="question-card">
+                <div class="equation" id="equationDisplay">??</div>
+                <div class="input-area">
+                    <input type="number" id="answerInput" class="ans-input" placeholder="?" autocomplete="off">
+                    <button id="submitAnswer" class="submit-btn">✓ 提交</button>
+                </div>
+                <div class="feedback" id="feedbackMsg"></div>
+                <div class="progress" id="progressText">第1 / 10题</div>
+            </div>
+            <div class="virtual-kbd">
+                <div class="kbd" data-num="1">1</div><div class="kbd" data-num="2">2</div><div class="kbd" data-num="3">3</div><div class="kbd" data-num="4">4</div>
+                <div class="kbd" data-num="5">5</div><div class="kbd" data-num="6">6</div><div class="kbd" data-num="7">7</div><div class="kbd" data-num="8">8</div>
+                <div class="kbd" data-num="9">9</div><div class="kbd" data-num="0">0</div><div class="kbd backspace" id="delKey">⌫ 删除</div><div class="kbd" id="virtualSubmit">✓ 提交</div>
+            </div>
+            <div style="font-size:0.8rem; text-align:center; color:#a0662c;">按 Enter 或点“提交”</div>
+        </div>
+
+        <div id="resultScreen" class="screen">
+            <div class="result-stats">
+                <div class="score-big" id="scoreSpan">0/10</div>
+                <div id="encourageMsg" style="font-size:1.4rem; margin:6px 0;"></div>
+                <p>⏱️ 总耗时: <span id="finalTime">0</span> 秒</p>
+                <p>📊 平均每题: <span id="avgTime">0</span> 秒</p>
+                <div>📅 日期: <span id="testDate"></span></div>
+            </div>
+            <div id="wrongList" class="wrong-list"><strong>📝 错题本</strong><br></div>
+            <div class="btn-group">
+                <button id="restartBtn">🔄 再玩一次</button>
+                <button id="redoWrongBtn">✏️ 练习错题</button>
+            </div>
+        </div>
+
+        <div id="reviewScreen" class="screen">
+            <div class="question-card">
+                <div class="equation" id="reviewEquation">??</div>
+                <div class="input-area">
+                    <input type="number" id="reviewInput" class="ans-input" placeholder="?">
+                    <button id="reviewSubmit" class="submit-btn">✓ 提交</button>
+                </div>
+                <div class="feedback" id="reviewFeedback"></div>
+                <div class="progress" id="reviewProgress">第1 / ?题</div>
+            </div>
+            <div class="virtual-kbd">
+                <div class="kbd" data-num="1">1</div><div class="kbd" data-num="2">2</div><div class="kbd" data-num="3">3</div><div class="kbd" data-num="4">4</div>
+                <div class="kbd" data-num="5">5</div><div class="kbd" data-num="6">6</div><div class="kbd" data-num="7">7</div><div class="kbd" data-num="8">8</div>
+                <div class="kbd" data-num="9">9</div><div class="kbd" data-num="0">0</div><div class="kbd backspace" id="reviewDel">⌫ 删除</div><div class="kbd" id="reviewVirtualSubmit">✓ 提交</div>
+            </div>
+            <button id="backToResult" style="background:#b0a088; margin-top:6px;">← 返回成绩</button>
+        </div>
+    </div>
+    <footer>💡 观察得数，只填缺少的那一位！方框“□”代表需要填写的数字。</footer>
+</div>
+
+<script>
+    (function() {
+        // 安全的随机函数
+        const rand = (min, max) => {
+            if (isNaN(min) || isNaN(max) || min > max) return min;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        };
+
+        const BLANK = '□';
+
+        // --------------------------------------------------------------
+        // 题目生成函数 (稳定版)
+        function genCarryTwoTwo(blankPos) {
+            let a, b, sum;
+            let attempts = 0;
+            do {
+                a = rand(10, 89);
+                b = rand(10, 89);
+                sum = a + b;
+                attempts++;
+                if (attempts > 50) { a = 27; b = 18; sum = 45; break; }
+            } while (sum >= 100 || sum < 20 || (a % 10 + b % 10) < 10);
+            const tens = Math.floor(sum / 10);
+            const units = sum % 10;
+            if (blankPos === 'tens') {
+                return { text: `${a} + ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: sum };
+            } else {
+                return { text: `${a} + ${b} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: sum };
+            }
+        }
+
+        function genNoCarryTwoTwo() {
+            let a, b, sum;
+            let attempts = 0;
+            do {
+                a = rand(10, 79);
+                b = rand(10, 89);
+                sum = a + b;
+                attempts++;
+                if (attempts > 50) { a = 23; b = 14; sum = 37; break; }
+            } while (sum >= 100 || (a % 10 + b % 10) >= 10 || Math.floor(a / 10) + Math.floor(b / 10) >= 10);
+            const tens = Math.floor(sum / 10);
+            const units = sum % 10;
+            const blankPos = Math.random() < 0.5 ? 'tens' : 'units';
+            if (blankPos === 'tens') {
+                return { text: `${a} + ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: sum };
+            } else {
+                return { text: `${a} + ${b} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: sum };
+            }
+        }
+
+        function genCarryOneTwo() {
+            let one, two, sum;
+            let attempts = 0;
+            do {
+                one = rand(1, 9);
+                two = rand(10, 89);
+                sum = one + two;
+                attempts++;
+                if (attempts > 50) { one = 7; two = 38; sum = 45; break; }
+            } while (sum >= 100 || (one + two % 10) < 10);
+            const tens = Math.floor(sum / 10);
+            const units = sum % 10;
+            const blankPos = Math.random() < 0.5 ? 'tens' : 'units';
+            if (blankPos === 'tens') {
+                return { text: `${one} + ${two} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: sum };
+            } else {
+                return { text: `${one} + ${two} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: sum };
+            }
+        }
+
+        function genNoCarryOneTwo() {
+            let one, two, sum;
+            let attempts = 0;
+            do {
+                one = rand(1, 9);
+                two = rand(10, 89);
+                sum = one + two;
+                attempts++;
+                if (attempts > 50) { one = 3; two = 25; sum = 28; break; }
+            } while (sum >= 100 || (one + two % 10) >= 10);
+            const tens = Math.floor(sum / 10);
+            const units = sum % 10;
+            const blankPos = Math.random() < 0.5 ? 'tens' : 'units';
+            if (blankPos === 'tens') {
+                return { text: `${one} + ${two} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: sum };
+            } else {
+                return { text: `${one} + ${two} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: sum };
+            }
+        }
+
+        function genBorrowTwoTwo(blankPos) {
+            let a, b, diff;
+            let attempts = 0;
+            do {
+                a = rand(21, 98);
+                b = rand(12, a - 1);
+                diff = a - b;
+                attempts++;
+                if (attempts > 50) { a = 53; b = 28; diff = 25; break; }
+            } while (diff < 10 || diff > 90 || (a % 10) >= (b % 10));
+            const tens = Math.floor(diff / 10);
+            const units = diff % 10;
+            if (blankPos === 'tens') {
+                return { text: `${a} - ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: diff };
+            } else {
+                return { text: `${a} - ${b} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: diff };
+            }
+        }
+
+        function genNoBorrowTwoTwo() {
+            let a, b, diff;
+            let attempts = 0;
+            do {
+                a = rand(11, 98);
+                b = rand(10, a);
+                diff = a - b;
+                attempts++;
+                if (attempts > 50) { a = 57; b = 23; diff = 34; break; }
+            } while (diff < 10 || (a % 10) < (b % 10));
+            const tens = Math.floor(diff / 10);
+            const units = diff % 10;
+            return { text: `${a} - ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: diff };
+        }
+
+        function genBorrowTwoOne() {
+            let a, b, diff;
+            let attempts = 0;
+            do {
+                a = rand(21, 99);
+                b = rand(1, 9);
+                if (a % 10 >= b) continue;
+                diff = a - b;
+                attempts++;
+                if (attempts > 50) { a = 42; b = 7; diff = 35; break; }
+            } while (diff < 10 || diff > 90);
+            const tens = Math.floor(diff / 10);
+            const units = diff % 10;
+            const blankPos = Math.random() < 0.5 ? 'tens' : 'units';
+            if (blankPos === 'tens') {
+                return { text: `${a} - ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: diff };
+            } else {
+                return { text: `${a} - ${b} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: diff };
+            }
+        }
+
+        function genSpecialDiffOne() {
+            let type = rand(0, 1);
+            let attempts = 0;
+            if (type === 0) {
+                let a, b, diff;
+                do {
+                    let u1 = rand(1, 9);
+                    let u2 = u1 - 1;
+                    if (u2 < 0) u2 = u1 + 1;
+                    let t1 = rand(2, 9);
+                    let t2 = rand(1, t1);
+                    a = t1 * 10 + u1;
+                    b = t2 * 10 + u2;
+                    if (a < b) continue;
+                    diff = a - b;
+                    attempts++;
+                    if (attempts > 50) { a = 54; b = 45; diff = 9; break; }
+                } while (diff < 10 || diff > 99 || Math.abs((a % 10) - (b % 10)) !== 1);
+                const tens = Math.floor(diff / 10);
+                const units = diff % 10;
+                const blankPos = Math.random() < 0.5 ? 'tens' : 'units';
+                if (blankPos === 'tens') {
+                    return { text: `${a} - ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: diff };
+                } else {
+                    return { text: `${a} - ${b} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: diff };
+                }
+            } else {
+                let a, b, diff;
+                do {
+                    let u1 = rand(2, 9);
+                    let bVal = u1 - 1;
+                    if (bVal < 1) bVal = u1 + 1;
+                    let tensA = rand(2, 9);
+                    a = tensA * 10 + u1;
+                    b = bVal;
+                    diff = a - b;
+                    attempts++;
+                    if (attempts > 50) { a = 32; b = 3; diff = 29; break; }
+                } while (diff < 10 || diff > 99 || Math.abs((a % 10) - b) !== 1);
+                const tens = Math.floor(diff / 10);
+                const units = diff % 10;
+                const blankPos = Math.random() < 0.5 ? 'tens' : 'units';
+                if (blankPos === 'tens') {
+                    return { text: `${a} - ${b} = ${BLANK}${units}`, answer: tens, blankType: 'tens', fullResult: diff };
+                } else {
+                    return { text: `${a} - ${b} = ${tens}${BLANK}`, answer: units, blankType: 'units', fullResult: diff };
+                }
+            }
+        }
+
+        function buildQuiz() {
+            let questions = [];
+            questions.push(genCarryTwoTwo('tens'));
+            questions.push(genCarryTwoTwo('units'));
+            questions.push(genNoCarryTwoTwo());
+            questions.push(genCarryOneTwo());
+            questions.push(genNoCarryOneTwo());
+            questions.push(genBorrowTwoTwo('tens'));
+            questions.push(genBorrowTwoTwo('units'));
+            questions.push(genNoBorrowTwoTwo());
+            questions.push(genBorrowTwoOne());
+            questions.push(genBorrowTwoOne());
+
+            let replaced = false;
+            for (let i = 0; i < questions.length; i++) {
+                if (!replaced && questions[i].text.includes('-') && (questions[i].text.match(/\d{2} - \d{2}/))) {
+                    let special = genSpecialDiffOne();
+                    for (let retry = 0; retry < 5 && questions.some(q => q.text === special.text); retry++) {
+                        special = genSpecialDiffOne();
+                    }
+                    questions[i] = special;
+                    replaced = true;
+                }
+            }
+            for (let i = 0; i < questions.length; i++) {
+                if (!questions[i].text || questions[i].text.includes('undefined') || isNaN(questions[i].answer)) {
+                    questions[i] = genCarryTwoTwo('tens');
+                }
+            }
+            return questions;
+        }
+
+        // ---------- 游戏状态 ----------
+        let quiz = [];
+        let curIndex = 0;
+        let correct = 0;
+        let wrongs = [];
+        let startTime = 0, timer = null, elapsed = 0;
+        let isSubmitting = false;   // 防止重复提交的标志
+
+        // DOM 元素
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const reviewScreen = document.getElementById('reviewScreen');
+        const equationDisplay = document.getElementById('equationDisplay');
+        const answerInput = document.getElementById('answerInput');
+        const feedbackSpan = document.getElementById('feedbackMsg');
+        const progressSpan = document.getElementById('progressText');
+        const totalTimeSpan = document.getElementById('totalTime');
+        const scoreSpan = document.getElementById('scoreSpan');
+        const encourageMsg = document.getElementById('encourageMsg');
+        const finalTimeSpan = document.getElementById('finalTime');
+        const avgTimeSpan = document.getElementById('avgTime');
+        const wrongListDiv = document.getElementById('wrongList');
+        const testDateSpan = document.getElementById('testDate');
+        const reviewEquation = document.getElementById('reviewEquation');
+        const reviewInput = document.getElementById('reviewInput');
+        const reviewFeedbackSpan = document.getElementById('reviewFeedback');
+        const reviewProgressSpan = document.getElementById('reviewProgress');
+
+        let reviewWrongs = [];
+        let reviewIdx = 0;
+        let reviewCorrectCount = 0;
+        let isReviewSubmitting = false;
+
+        // 辅助函数：禁用/启用主界面提交按钮
+        function setMainSubmitEnabled(enabled) {
+            const btn = document.getElementById('submitAnswer');
+            if (btn) {
+                if (enabled) {
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.classList.add('disabled');
+                }
+            }
+            const virtBtn = document.getElementById('virtualSubmit');
+            if (virtBtn) {
+                if (enabled) {
+                    virtBtn.style.pointerEvents = 'auto';
+                    virtBtn.style.opacity = '1';
+                } else {
+                    virtBtn.style.pointerEvents = 'none';
+                    virtBtn.style.opacity = '0.6';
+                }
+            }
+        }
+
+        function setReviewSubmitEnabled(enabled) {
+            const btn = document.getElementById('reviewSubmit');
+            if (btn) {
+                if (enabled) {
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.classList.add('disabled');
+                }
+            }
+            const virtBtn = document.getElementById('reviewVirtualSubmit');
+            if (virtBtn) {
+                if (enabled) {
+                    virtBtn.style.pointerEvents = 'auto';
+                    virtBtn.style.opacity = '1';
+                } else {
+                    virtBtn.style.pointerEvents = 'none';
+                    virtBtn.style.opacity = '0.6';
+                }
+            }
+        }
+
+        // 计时
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            startTime = Date.now();
+            timer = setInterval(() => {
+                elapsed = Math.floor((Date.now() - startTime) / 1000);
+                totalTimeSpan.innerText = elapsed;
+            }, 200);
+        }
+        function stopTimer() {
+            if (timer) clearInterval(timer);
+            timer = null;
+            return elapsed;
+        }
+
+        function refreshUI() {
+            if (curIndex >= quiz.length) return;
+            equationDisplay.innerText = quiz[curIndex].text;
+            answerInput.value = '';
+            feedbackSpan.innerText = '';
+            feedbackSpan.className = 'feedback';
+            progressSpan.innerText = `第${curIndex+1} / 10题`;
+            // 重置提交锁和按钮状态
+            isSubmitting = false;
+            setMainSubmitEnabled(true);
+        }
+
+        function submitMain() {
+            if (isSubmitting) return;
+            if (curIndex >= quiz.length) return;
+            let user = parseInt(answerInput.value);
+            if (isNaN(user)) {
+                feedbackSpan.innerText = '🤔 输入数字再提交～';
+                feedbackSpan.className = 'feedback wrong';
+                return;
+            }
+            isSubmitting = true;
+            setMainSubmitEnabled(false);
+
+            const q = quiz[curIndex];
+            if (user === q.answer) {
+                feedbackSpan.innerText = '✅ 正确！真棒！';
+                feedbackSpan.className = 'feedback correct';
+                correct++;
+            } else {
+                feedbackSpan.innerText = `❌ 正确答案是 ${q.answer}，再努力！`;
+                feedbackSpan.className = 'feedback wrong';
+                wrongs.push({
+                    text: q.text,
+                    correctAnswer: q.answer,
+                    blankType: q.blankType,
+                    fullResult: q.fullResult
+                });
+            }
+            setTimeout(() => {
+                curIndex++;
+                if (curIndex < quiz.length) {
+                    refreshUI();
+                } else {
+                    endGame();
+                }
+            }, 800);
+        }
+
+        function endGame() {
+            stopTimer();
+            const finalSec = elapsed;
+            resultScreen.classList.add('active');
+            gameScreen.classList.remove('active');
+            scoreSpan.innerText = `${correct}/${quiz.length}`;
+            finalTimeSpan.innerText = finalSec;
+            const avg = (finalSec / quiz.length).toFixed(1);
+            avgTimeSpan.innerText = avg;
+            const today = new Date();
+            testDateSpan.innerText = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+            let msg = '';
+            if (correct === 10) msg = '🏆 完美通关！填空小英雄！';
+            else if (correct >= 8) msg = '🎉 非常棒，再细致一点就全对啦！';
+            else if (correct >= 6) msg = '🌟 不错，把错题练一练更厉害！';
+            else msg = '💪 别灰心，错题就是最好的练习！';
+            encourageMsg.innerText = msg;
+
+            wrongListDiv.innerHTML = '<strong>📝 错题本</strong><br>';
+            if (wrongs.length === 0) wrongListDiv.innerHTML += '<div>✨ 全对！太优秀啦 ✨</div>';
+            else {
+                wrongs.forEach(w => {
+                    wrongListDiv.innerHTML += `<div class="wrong-item">${w.text}  ❌ 你的答案: ?  ✅ 正确答案: ${w.correctAnswer}</div>`;
+                });
+            }
+        }
+
+        function startReview() {
+            if (wrongs.length === 0) { alert('🎉 没有错题，你真棒！'); return; }
+            reviewWrongs = [...wrongs];
+            reviewIdx = 0;
+            reviewCorrectCount = 0;
+            resultScreen.classList.remove('active');
+            reviewScreen.classList.add('active');
+            showReviewItem();
+        }
+
+        function showReviewItem() {
+            if (reviewIdx >= reviewWrongs.length) {
+                alert(`错题练习完成！本次正确 ${reviewCorrectCount}/${reviewWrongs.length} 题。`);
+                reviewScreen.classList.remove('active');
+                resultScreen.classList.add('active');
+                return;
+            }
+            const item = reviewWrongs[reviewIdx];
+            reviewEquation.innerText = item.text;
+            reviewInput.value = '';
+            reviewFeedbackSpan.innerText = '';
+            reviewProgressSpan.innerText = `第${reviewIdx+1} / ${reviewWrongs.length}题 (错题重做)`;
+            isReviewSubmitting = false;
+            setReviewSubmitEnabled(true);
+        }
+
+        function submitReview() {
+            if (isReviewSubmitting) return;
+            if (reviewIdx >= reviewWrongs.length) return;
+            let user = parseInt(reviewInput.value);
+            if (isNaN(user)) {
+                reviewFeedbackSpan.innerText = '请输入数字';
+                reviewFeedbackSpan.className = 'feedback wrong';
+                return;
+            }
+            isReviewSubmitting = true;
+            setReviewSubmitEnabled(false);
+            const cur = reviewWrongs[reviewIdx];
+            if (user === cur.correctAnswer) {
+                reviewFeedbackSpan.innerText = '✓ 正确！继续前进！';
+                reviewFeedbackSpan.className = 'feedback correct';
+                reviewCorrectCount++;
+                setTimeout(() => {
+                    reviewIdx++;
+                    showReviewItem();
+                }, 600);
+            } else {
+                reviewFeedbackSpan.innerText = `✗ 正确答案是 ${cur.correctAnswer}，再试一次！`;
+                reviewFeedbackSpan.className = 'feedback wrong';
+                setTimeout(() => {
+                    reviewInput.value = '';
+                    reviewFeedbackSpan.innerText = '';
+                    isReviewSubmitting = false;
+                    setReviewSubmitEnabled(true);
+                }, 1200);
+            }
+        }
+
+        function newGame() {
+            if (timer) clearInterval(timer);
+            quiz = buildQuiz();
+            curIndex = 0;
+            correct = 0;
+            wrongs = [];
+            elapsed = 0;
+            totalTimeSpan.innerText = '0';
+            isSubmitting = false;
+            refreshUI();
+            startTimer();
+            startScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            resultScreen.classList.remove('active');
+            reviewScreen.classList.remove('active');
+        }
+
+        // 事件绑定
+        document.getElementById('startBtn').onclick = newGame;
+        document.getElementById('restartBtn').onclick = newGame;
+        document.getElementById('redoWrongBtn').onclick = startReview;
+        document.getElementById('backToResult').onclick = () => {
+            reviewScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+        };
+        document.getElementById('submitAnswer').onclick = submitMain;
+        document.getElementById('reviewSubmit').onclick = submitReview;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (gameScreen.classList.contains('active')) submitMain();
+                else if (reviewScreen.classList.contains('active')) submitReview();
+            }
+        });
+
+        function bindVirtual(inputField, submitCallback, delId, virtSubmitId) {
+            const keys = document.querySelectorAll('.kbd[data-num]');
+            keys.forEach(k => {
+                k.onclick = () => {
+                    if (inputField) inputField.value += k.getAttribute('data-num');
+                    inputField.focus();
+                };
+            });
+            document.getElementById(delId).onclick = () => {
+                if (inputField) inputField.value = inputField.value.slice(0, -1);
+                inputField.focus();
+            };
+            document.getElementById(virtSubmitId).onclick = submitCallback;
+        }
+        bindVirtual(answerInput, submitMain, 'delKey', 'virtualSubmit');
+        bindVirtual(reviewInput, submitReview, 'reviewDel', 'reviewVirtualSubmit');
+    })();
+</script>
+</body>
+</html>
